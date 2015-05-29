@@ -60,7 +60,8 @@ class CORRADE_UTILITY_EXPORT String {
          * also @p length into account.
          */
         static std::string fromArray(const char* string, std::size_t length) {
-            return string ? std::string{string, length} : std::string{};
+            /* GCC 4.5 can't handle {} here */
+            return string ? std::string(string, length) : std::string{};
         }
 
         /**
