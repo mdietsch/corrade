@@ -91,13 +91,12 @@ ArrayReferenceTest::ArrayReferenceTest() {
 
 void ArrayReferenceTest::constructEmpty() {
     const ArrayReference a;
-    /* MSVC 2013 complains about ambiguous operator== overload. WHAT. */
-    CORRADE_VERIFY(a == static_cast<int*>(nullptr));
+    CORRADE_VERIFY(a == nullptr);
     CORRADE_COMPARE(a.size(), 0);
 }
 
 void ArrayReferenceTest::constructNullptr() {
-    #if defined(CORRADE_GCC45_COMPATIBILITY) || defined(CORRADE_MSVC2013_COMPATIBILITY)
+    #ifdef CORRADE_GCC45_COMPATIBILITY
     CORRADE_SKIP("Nullptr is not supported on this compiler.");
     #else
     const ArrayReference a(nullptr);
@@ -113,8 +112,7 @@ void ArrayReferenceTest::constructNullptrSize() {
     /* This should be allowed for e.g. just allocating memory in
        Magnum::Buffer::setData() without passing any actual data */
     const ArrayReference a(nullptr, 5);
-    /* MSVC 2013 complains about ambiguous operator== overload. WHAT. */
-    CORRADE_VERIFY(a ==  static_cast<int*>(nullptr));
+    CORRADE_VERIFY(a == nullptr);
     CORRADE_COMPARE(a.size(), 5);
 }
 
@@ -233,22 +231,38 @@ void ArrayReferenceTest::sliceInvalid() {
 void ArrayReferenceTest::sliceNullptr() {
     ArrayReference a{nullptr, 5};
 
+    #ifndef CORRADE_GCC45_COMPATIBILITY
+    ArrayReference b = a.prefix(nullptr);
+    #else
     ArrayReference b = a.prefix(static_cast<int*>(nullptr));
+    #endif
     CORRADE_VERIFY(!b);
     CORRADE_COMPARE(b.size(), 0);
 
+    #ifndef CORRADE_GCC45_COMPATIBILITY
+    ArrayReference c = a.suffix(nullptr);
+    #else
     ArrayReference c = a.suffix(static_cast<int*>(nullptr));
+    #endif
     CORRADE_VERIFY(!c);
     CORRADE_COMPARE(c.size(), 5);
 
     int data[5];
     ArrayReference d{data};
 
+    #ifndef CORRADE_GCC45_COMPATIBILITY
+    ArrayReference e = d.prefix(nullptr);
+    #else
     ArrayReference e = d.prefix(static_cast<int*>(nullptr));
+    #endif
     CORRADE_VERIFY(!e);
     CORRADE_COMPARE(e.size(), 0);
 
+    #ifndef CORRADE_GCC45_COMPATIBILITY
+    ArrayReference f = d.suffix(nullptr);
+    #else
     ArrayReference f = d.suffix(static_cast<int*>(nullptr));
+    #endif
     CORRADE_VERIFY(!f);
     CORRADE_COMPARE(f.size(), 0);
 }

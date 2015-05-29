@@ -345,12 +345,10 @@ std::string Resource::get(const std::string& filename) const {
 
 std::pair<bool, Containers::Array<char>> Resource::fileContents(const std::string& filename) {
     if(!Directory::fileExists(filename)) {
-        #if !defined(CORRADE_GCC45_COMPATIBILITY) && !defined(CORRADE_MSVC2013_COMPATIBILITY)
+        #ifndef CORRADE_GCC45_COMPATIBILITY
         return {false, nullptr};
-        #elif !defined(CORRADE_MSVC2013_COMPATIBILITY)
-        return {false, {}};
         #else
-        return std::pair<bool, Containers::Array<char>&&>{false, Containers::Array<char>{}};
+        return {false, {}};
         #endif
     }
 
