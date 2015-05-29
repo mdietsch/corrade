@@ -275,7 +275,53 @@ template<class T> class Array {
 /** @copybrief ArrayView
  * @deprecated Use @ref ArrayView.h and @ref ArrayView instead.
  */
+#ifndef CORRADE_GCC46_COMPATIBILITY
 template<class T> using ArrayReference CORRADE_DEPRECATED("use ArrayView.h and ArrayView instead") = ArrayView<T>;
+#else
+/* Uh. Just copied over and delegating to ArrayView constructors */
+template<class T> class CORRADE_DEPRECATED("use ArrayView.h and ArrayView instead") ArrayReference: public ArrayView<T> {
+    public:
+        #ifndef CORRADE_GCC45_COMPATIBILITY
+        constexpr /*implicit*/ ArrayReference(std::nullptr_t) noexcept: ArrayView<T>{nullptr} {}
+        #endif
+        constexpr /*implicit*/ ArrayReference() noexcept {}
+        constexpr /*implicit*/ ArrayReference(T* data, std::size_t size) noexcept: ArrayView<T>{data, size} {}
+        #ifdef CORRADE_GCC46_COMPATIBILITY
+        #define size size_ /* With GCC 4.6 it conflicts with size(). WTF. */
+        #endif
+        template<std::size_t size> constexpr /*implicit*/ ArrayReference(T(&data)[size]) noexcept: ArrayView<T>{data} {}
+        #ifdef CORRADE_GCC46_COMPATIBILITY
+        #undef size
+        #endif
+        constexpr /*implicit*/ ArrayReference(Array<T>& array) noexcept: ArrayView<T>{array} {}
+        template<class U, class V = typename std::enable_if<std::is_same<const U, T>::value>::type> constexpr /*implicit*/ ArrayReference(const Array<U>& array) noexcept: ArrayView<T>{array} {}
+        template<class U, class V = typename std::enable_if<std::is_same<const U, T>::value>::type> constexpr /*implicit*/ ArrayReference(const ArrayView<U>& array) noexcept: ArrayView<T>{array} {}
+};
+template<> class CORRADE_DEPRECATED("use ArrayView.h and ArrayView instead") ArrayReference<const void>: public ArrayView<const void> {
+    public:
+        #ifndef CORRADE_GCC45_COMPATIBILITY
+        constexpr /*implicit*/ ArrayReference(std::nullptr_t) noexcept: ArrayView<const void>{nullptr} {}
+        #endif
+        constexpr
+        /* implicit where nullptr is not supported, as explicitly specifying
+           the type is much less convenient than simply typing nullptr */
+        #ifndef CORRADE_GCC45_COMPATIBILITY
+        explicit
+        #endif
+        ArrayReference() noexcept {}
+        constexpr /*implicit*/ ArrayReference(const void* data, std::size_t size) noexcept: ArrayView<const void>{data, size} {}
+        template<class T> constexpr /*implicit*/ ArrayReference(const T* data, std::size_t size) noexcept: ArrayView<const void>{data, size} {}
+        #ifdef CORRADE_GCC46_COMPATIBILITY
+        #define size size_ /* With GCC 4.6 it conflicts with size(). WTF. */
+        #endif
+        template<class T, std::size_t size> constexpr /*implicit*/ ArrayReference(T(&data)[size]) noexcept: ArrayView<const void>{data} {}
+        #ifdef CORRADE_GCC46_COMPATIBILITY
+        #undef size
+        #endif
+        template<class T> constexpr /*implicit*/ ArrayReference(const Array<T>& array) noexcept: ArrayView<const void>{array} {}
+        template<class T> constexpr /*implicit*/ ArrayReference(const ArrayView<T>& array) noexcept: ArrayView<const void>{array} {}
+};
+#endif
 #endif
 
 template<class T> inline Array<T>::Array(Array<T>&& other) noexcept: _data(other._data), _size(other._size) {

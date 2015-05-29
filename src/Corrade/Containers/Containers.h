@@ -41,7 +41,11 @@ namespace Corrade { namespace Containers {
 template<class> class Array;
 template<class> class ArrayView;
 #ifdef CORRADE_BUILD_DEPRECATED
+#ifndef CORRADE_GCC46_COMPATIBILITY
 template<class T> using ArrayReference CORRADE_DEPRECATED("use ArrayView.h and ArrayView instead") = ArrayView<T>;
+#else
+template<class> class CORRADE_DEPRECATED("use ArrayView.h and ArrayView instead") ArrayReference;
+#endif
 #endif
 
 template<class, class U, U fullValue = U(~0)> class EnumSet;
