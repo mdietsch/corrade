@@ -352,8 +352,7 @@ std::pair<bool, Containers::Array<char>> Resource::fileContents(const std::strin
         #endif
     }
 
-    /* MSVC 2013 has ICE when {} is used. Meh. */
-    return std::make_pair(true, Directory::read(filename));
+    return {true, Directory::read(filename)};
 }
 
 std::string Resource::comment(const std::string& comment) {

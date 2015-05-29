@@ -373,11 +373,10 @@ void Test::crossManagerDependencies() {
     }
 
     /* After destroying hotdog try again */
-    /* MSVC 2013 has ICE when std::vector<std::string>{} is used. Meh. */
     CORRADE_COMPARE(foodManager.unload("HotDog"), LoadState::NotLoaded);
     CORRADE_COMPARE(manager.unload("Dog"), LoadState::NotLoaded);
     CORRADE_COMPARE(manager.metadata("Dog")->usedBy(),
-        std::vector<std::string>());
+        std::vector<std::string>{});
     #endif
 
     /* Verify that the plugin can be instanced only through its own manager */
@@ -407,9 +406,8 @@ void Test::unresolvedDependencies() {
         "PluginManager::Manager::load(): plugin Snail is not ready to load: PluginManager::LoadState::WrongMetadataFile\n"
         "PluginManager::Manager::load(): unresolved dependency Snail of plugin HotDogWithSnail\n");
     CORRADE_COMPARE(foodManager.loadState("HotDogWithSnail"), LoadState::NotLoaded);
-    /* MSVC 2013 has ICE when std::vector<std::string>{} is used. Meh. */
     CORRADE_COMPARE(manager.metadata("Dog")->usedBy(),
-        std::vector<std::string>());
+        std::vector<std::string>{});
     #endif
 }
 
