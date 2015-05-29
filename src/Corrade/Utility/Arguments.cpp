@@ -25,7 +25,9 @@
 
 #include "Arguments.h"
 
-#include <algorithm> /* std::max(), needed by MSVC */
+#ifdef CORRADE_MSVC2013_COMPATIBILITY
+#include <algorithm> /* std::max() */
+#endif
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>

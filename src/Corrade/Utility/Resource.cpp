@@ -25,7 +25,9 @@
 
 #include "Resource.h"
 
-#include <algorithm> /* std::max(), needed by MSVC */
+#ifdef CORRADE_MSVC2013_COMPATIBILITY
+#include <algorithm> /* std::max() */
+#endif
 #include <iomanip>
 #include <sstream>
 #include <tuple>
