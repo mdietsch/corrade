@@ -133,11 +133,13 @@ template<class T> class ArrayView {
         #endif
         constexpr /*implicit*/ ArrayView(const ArrayView<U>& array) noexcept: _data(array), _size(array.size()) {}
 
+        #if !defined(CORRADE_GCC44_COMPATIBILITY) && !defined(CORRADE_MSVC2013_COMPATIBILITY)
+        /* Disabled on GCC 4.4 to avoid ambiguity with operator T*() (no
+           explicit conversion operators). Disabled on MSVC 2013 to avoid
+           ambiguous operator+() when doing pointer arithmetic. */
         /** @brief Whether the array is non-empty */
-        #ifndef CORRADE_GCC44_COMPATIBILITY
-        explicit
+        constexpr explicit operator bool() const { return _data; }
         #endif
-        operator bool() const { return _data; }
 
         /** @brief Conversion to array type */
         constexpr /*implicit*/ operator T*() const { return _data; }
@@ -283,12 +285,13 @@ template<> class ArrayView<const void> {
         /** @brief Construct const void reference to any @ref ArrayView */
         template<class T> constexpr /*implicit*/ ArrayView(const ArrayView<T>& array) noexcept: _data(array), _size(array.size()*sizeof(T)) {}
 
+        #if !defined(CORRADE_GCC44_COMPATIBILITY) && !defined(CORRADE_MSVC2013_COMPATIBILITY)
+        /* Disabled on GCC 4.4 to avoid ambiguity with operator T*() (no
+           explicit conversion operators). Disabled on MSVC 2013 to avoid
+           ambiguous operator+() when doing pointer arithmetic. */
         /** @brief Whether the array is non-empty */
-        constexpr
-        #ifndef CORRADE_GCC44_COMPATIBILITY
-        explicit
+        constexpr explicit operator bool() const { return _data; }
         #endif
-        operator bool() const { return _data; }
 
         /** @brief Conversion to array type */
         constexpr /*implicit*/ operator const void*() const { return _data; }

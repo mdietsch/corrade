@@ -150,11 +150,13 @@ template<class T> class Array {
         /** @brief Move assignment */
         Array<T>& operator=(Array<T>&&) noexcept;
 
+        #if !defined(CORRADE_GCC44_COMPATIBILITY) && !defined(CORRADE_MSVC2013_COMPATIBILITY)
+        /* Disabled on GCC 4.4 to avoid ambiguity with operator T*() (no
+           explicit conversion operators). Disabled on MSVC 2013 to avoid
+           ambiguous operator+() when doing pointer arithmetic. */
         /** @brief Whether the array is non-empty */
-        #ifndef CORRADE_GCC44_COMPATIBILITY
-        explicit
+        constexpr explicit operator bool() const { return _data; }
         #endif
-        operator bool() const { return _data; }
 
         /* `char* a = Containers::Array<char>(5); a[3] = 5;` would result in
            instant segfault, disallowing it in the following conversion

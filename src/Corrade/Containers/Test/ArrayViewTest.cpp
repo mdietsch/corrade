@@ -148,9 +148,6 @@ void ArrayViewTest::boolConversion() {
     CORRADE_VERIFY(!VoidArrayView());
 
     /* The conversion is explicit (i.e. no ArrayView(a) + 7) */
-    #ifdef CORRADE_GCC44_COMPATIBILITY
-    CORRADE_EXPECT_FAIL("Explicit conversion operators are not supported in GCC 4.4.");
-    #endif
     CORRADE_VERIFY(!(std::is_convertible<ArrayView, int>::value));
     CORRADE_VERIFY(!(std::is_convertible<VoidArrayView, int>::value));
 }
@@ -223,10 +220,9 @@ void ArrayViewTest::sliceInvalid() {
     std::ostringstream out;
     Error::setOutput(&out);
 
-    /* GCC 4.4 needs begin() to work around implicit conversion to bool */
-    a.slice(a.begin() - 1, a.begin());
-    a.slice(a.begin() + 5, a.begin() + 6);
-    a.slice(a.begin() + 2, a.begin() + 1);
+    a.slice(a - 1, a);
+    a.slice(a + 5, a + 6);
+    a.slice(a + 2, a + 1);
 
     CORRADE_COMPARE(out.str(), "Containers::ArrayView::slice(): slice out of range\n"
                                "Containers::ArrayView::slice(): slice out of range\n"
@@ -340,21 +336,13 @@ void ArrayViewTest::voidConversion() {
     /* void reference to Array */
     Array d(6);
     VoidArrayView e = d;
-    #ifndef CORRADE_GCC44_COMPATIBILITY
     CORRADE_VERIFY(e == d);
-    #else
-    CORRADE_VERIFY(e == static_cast<const void*>(d));
-    #endif
     CORRADE_COMPARE(e.size(), d.size()*sizeof(int));
 
     /* void reference to ArrayView */
     ArrayView f = a;
     VoidArrayView g = f;
-    #ifndef CORRADE_GCC44_COMPATIBILITY
     CORRADE_VERIFY(g == f);
-    #else
-    CORRADE_VERIFY(g == static_cast<const void*>(f));
-    #endif
     CORRADE_COMPARE(g.size(), f.size()*sizeof(int));
 }
 

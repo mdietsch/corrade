@@ -158,11 +158,6 @@ void ArrayTest::constructZeroInitialized() {
 void ArrayTest::boolConversion() {
     CORRADE_VERIFY(Array(2));
     CORRADE_VERIFY(!Array());
-
-    /* The conversion is explicit (i.e. no Array(2) + 7) */
-    #ifdef CORRADE_GCC44_COMPATIBILITY
-    CORRADE_EXPECT_FAIL("Explicit conversion operators are not supported in GCC 4.4.");
-    #endif
     CORRADE_VERIFY(!(std::is_convertible<Array, int>::value));
 }
 
