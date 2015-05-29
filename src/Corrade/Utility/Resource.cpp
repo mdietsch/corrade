@@ -33,6 +33,7 @@
 #include <tuple>
 #include <vector>
 
+#include "Corrade/Containers/Array.h"
 #include "Corrade/Utility/Assert.h"
 #include "Corrade/Utility/Configuration.h"
 #include "Corrade/Utility/ConfigurationGroup.h"
@@ -79,7 +80,7 @@ void Resource::registerData(const char* group, unsigned int count, const unsigne
         unsigned int filenamePosition = *reinterpret_cast<const unsigned int*>(_positions+i);
         unsigned int dataPosition = *reinterpret_cast<const unsigned int*>(_positions+i+size);
 
-        Containers::ArrayReference<const char> res(reinterpret_cast<const char*>(data)+oldDataPosition, dataPosition-oldDataPosition);
+        Containers::ArrayView<const char> res(reinterpret_cast<const char*>(data)+oldDataPosition, dataPosition-oldDataPosition);
 
         #ifndef CORRADE_GCC47_COMPATIBILITY
         groupData->second.resources.emplace(std::string(_filenames+oldFilenamePosition, filenamePosition-oldFilenamePosition), res);
@@ -253,6 +254,10 @@ void Resource::overrideGroup(const std::string& group, const std::string& config
     it->second.overrideGroup = configurationFile;
 }
 
+bool Resource::hasGroup(const std::string& group) {
+    return resources().find(group) != resources().end();
+}
+
 Resource::Resource(const std::string& group): _overrideGroup(nullptr) {
     _group = resources().find(group);
     CORRADE_ASSERT(_group != resources().end(),
@@ -285,7 +290,7 @@ std::vector<std::string> Resource::list() const {
     return result;
 }
 
-Containers::ArrayReference<const char> Resource::getRaw(const std::string& filename) const {
+Containers::ArrayView<const char> Resource::getRaw(const std::string& filename) const {
     CORRADE_INTERNAL_ASSERT(_group != resources().end());
 
     /* The group is overriden with live data */
@@ -340,7 +345,7 @@ Containers::ArrayReference<const char> Resource::getRaw(const std::string& filen
 }
 
 std::string Resource::get(const std::string& filename) const {
-    Containers::ArrayReference<const char> data = getRaw(filename);
+    Containers::ArrayView<const char> data = getRaw(filename);
     /* GCC 4.5 doesn't like {} here */
     return data ? std::string(data, data.size()) : std::string{};
 }

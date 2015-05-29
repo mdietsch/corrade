@@ -29,10 +29,21 @@
  * @brief Forward declarations for @ref Corrade::Containers namespace
  */
 
+#include <type_traits>
+
+#include "Corrade/configure.h"
+#ifdef CORRADE_BUILD_DEPRECATED
+#include "Corrade/Utility/Macros.h"
+#endif
+
 namespace Corrade { namespace Containers {
 
 template<class> class Array;
-template<class> class ArrayReference;
+template<class> class ArrayView;
+#ifdef CORRADE_BUILD_DEPRECATED
+template<class T> using ArrayReference CORRADE_DEPRECATED("use ArrayView.h and ArrayView instead") = ArrayView<T>;
+#endif
+
 template<class, class U, U fullValue = U(~0)> class EnumSet;
 template<class> class LinkedList;
 template<class Derived, class List = LinkedList<Derived>> class LinkedListItem;

@@ -34,7 +34,7 @@
 #include <utility>
 #include <vector>
 
-#include "Corrade/Containers/Array.h"
+#include "Corrade/Containers/ArrayView.h"
 #include "Corrade/Utility/visibility.h"
 
 namespace Corrade { namespace Utility {
@@ -111,11 +111,15 @@ class CORRADE_UTILITY_EXPORT Resource {
          */
         static void overrideGroup(const std::string& group, const std::string& configurationFile);
 
+        /** @brief Whether given group exists */
+        static bool hasGroup(const std::string& group);
+
         /**
          * @brief Constructor
          * @param group         Group name
          *
          * The group must exist.
+         * @see @ref hasGroup()
          */
         explicit Resource(const std::string& group);
 
@@ -136,7 +140,7 @@ class CORRADE_UTILITY_EXPORT Resource {
          * Returns reference to data of given file in the group. The file must
          * exist. If the file is empty, returns `nullptr`.
          */
-        Containers::ArrayReference<const char> getRaw(const std::string& filename) const;
+        Containers::ArrayView<const char> getRaw(const std::string& filename) const;
 
         /**
          * @brief Get data resource
@@ -159,7 +163,7 @@ class CORRADE_UTILITY_EXPORT Resource {
             ~GroupData();
 
             std::string overrideGroup;
-            std::map<std::string, Containers::ArrayReference<const char>> resources;
+            std::map<std::string, Containers::ArrayView<const char>> resources;
         };
 
         struct OverrideData;
