@@ -64,7 +64,7 @@ Sha1& Sha1::operator<<(const std::string& data) {
         #ifndef CORRADE_MSVC2013_COMPATIBILITY
         _buffer = {};
         #else
-        _buffer = std::string{};
+        _buffer = std::string{}; /* operator= is ambiguous uhh */
         #endif
     }
 

@@ -150,6 +150,8 @@ void StringTest::join() {
     CORRADE_COMPARE(String::join({}, '/'), "");
     CORRADE_COMPARE(String::joinWithoutEmptyParts({}, '/'), "");
 
+    /* GCC 4.4 needs explicit std::vector<std::string> in the following */
+
     /* One empty value */
     CORRADE_COMPARE(String::join(std::vector<std::string>{""}, '/'), "");
     CORRADE_COMPARE(String::joinWithoutEmptyParts(std::vector<std::string>{""}, '/'), "");

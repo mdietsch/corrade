@@ -60,7 +60,7 @@ Configuration::Configuration(const std::string& filename, const Flags flags): Co
     #ifndef CORRADE_MSVC2013_COMPATIBILITY
     _filename = {};
     #else
-    _filename = std::string{};
+    _filename = std::string{}; /* operator= is ambiguous uhhh */
     #endif
     _flags &= ~InternalFlag::IsValid;
 }
