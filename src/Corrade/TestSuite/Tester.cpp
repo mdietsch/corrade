@@ -49,7 +49,7 @@ int Tester::exec(std::ostream* logOutput, std::ostream* errorOutput) {
     unsigned int errorCount = 0,
         noCheckCount = 0;
 
-    for(auto i = testCases.cbegin(); i != testCases.cend(); ++i) {
+    for(auto it = testCases.cbegin(); it != testCases.cend(); ++it) {
         /* Reset output to stdout for each test case to prevent debug
             output segfaults */
         /** @todo Drop this when Debug has proper output scoping */
@@ -59,7 +59,7 @@ int Tester::exec(std::ostream* logOutput, std::ostream* errorOutput) {
 
         try {
             testCaseName.clear();
-            (this->*(*i))();
+            (this->*(*it))();
         } catch(Exception) {
             ++errorCount;
             continue;
