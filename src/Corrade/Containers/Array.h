@@ -302,13 +302,7 @@ template<> class CORRADE_DEPRECATED("use ArrayView.h and ArrayView instead") Arr
         #ifndef CORRADE_GCC45_COMPATIBILITY
         constexpr /*implicit*/ ArrayReference(std::nullptr_t) noexcept: ArrayView<const void>{nullptr} {}
         #endif
-        constexpr
-        /* implicit where nullptr is not supported, as explicitly specifying
-           the type is much less convenient than simply typing nullptr */
-        #ifndef CORRADE_GCC45_COMPATIBILITY
-        explicit
-        #endif
-        ArrayReference() noexcept {}
+        constexpr /*implicit*/ ArrayReference() noexcept {}
         constexpr /*implicit*/ ArrayReference(const void* data, std::size_t size) noexcept: ArrayView<const void>{data, size} {}
         template<class T> constexpr /*implicit*/ ArrayReference(const T* data, std::size_t size) noexcept: ArrayView<const void>{data, size} {}
         #ifdef CORRADE_GCC46_COMPATIBILITY

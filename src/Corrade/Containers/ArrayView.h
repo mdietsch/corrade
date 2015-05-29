@@ -241,13 +241,7 @@ template<> class ArrayView<const void> {
          * Creates zero-sized array. Move array with nonzero size onto the
          * instance to make it useful.
          */
-        constexpr
-        /* implicit where nullptr is not supported, as explicitly specifying
-           the type is much less convenient than simply typing nullptr */
-        #ifndef CORRADE_GCC45_COMPATIBILITY
-        explicit
-        #endif
-        ArrayView() noexcept: _data(nullptr), _size(0) {}
+        constexpr /*implicit*/ ArrayView() noexcept: _data(nullptr), _size(0) {}
 
         /**
          * @brief Constructor
