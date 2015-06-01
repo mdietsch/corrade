@@ -42,7 +42,11 @@ template<class> class Array;
 template<class> class ArrayView;
 #ifdef CORRADE_BUILD_DEPRECATED
 #ifndef CORRADE_GCC46_COMPATIBILITY
-template<class T> using ArrayReference CORRADE_DEPRECATED("use ArrayView.h and ArrayView instead") = ArrayView<T>;
+template<class T> using ArrayReference
+    #ifndef CORRADE_MSVC2013_COMPATIBILITY /* MSVC 2013 cannot handle attributes for template aliases */
+    CORRADE_DEPRECATED("use ArrayView.h and ArrayView instead")
+    #endif
+    = ArrayView<T>;
 #else
 template<class> class CORRADE_DEPRECATED("use ArrayView.h and ArrayView instead") ArrayReference;
 #endif

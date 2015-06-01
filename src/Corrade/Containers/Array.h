@@ -276,7 +276,10 @@ template<class T> class Array {
  * @deprecated Use @ref ArrayView.h and @ref ArrayView instead.
  */
 #ifndef CORRADE_GCC46_COMPATIBILITY
+#ifndef CORRADE_MSVC2013_COMPATIBILITY
+/* MSVC 2013 cannot handle multiple definitions of (and attributes for) template aliases */
 template<class T> using ArrayReference CORRADE_DEPRECATED("use ArrayView.h and ArrayView instead") = ArrayView<T>;
+#endif
 #else
 /* Uh. Just copied over and delegating to ArrayView constructors */
 template<class T> class CORRADE_DEPRECATED("use ArrayView.h and ArrayView instead") ArrayReference: public ArrayView<T> {
