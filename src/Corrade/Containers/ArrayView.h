@@ -32,6 +32,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "Corrade/compatibility.h"
 #include "Corrade/Containers/Containers.h"
 #include "Corrade/Utility/Assert.h"
 
