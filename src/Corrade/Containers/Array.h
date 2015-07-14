@@ -35,6 +35,7 @@
 #include "Corrade/compatibility.h"
 #include "Corrade/configure.h"
 #include "Corrade/Containers/ArrayView.h"
+#include "Corrade/Containers/Tags.h"
 
 #ifdef CORRADE_BUILD_DEPRECATED
 #include "Corrade/Utility/Macros.h"
@@ -56,13 +57,53 @@ additionally also in range-based for cycle.
 Usage example:
 @code
 // Create default-initialized array with 5 integers and set them to some value
-Containers::Array<int> a(5);
+Containers::Array<int> a{5};
 int b = 0;
 for(auto& i: a) i = b++; // a = {0, 1, 2, 3, 4}
 
 // Create array from given values
 auto b = Containers::Array<int>::from(3, 18, -157, 0);
 b[3] = 25; // b = {3, 18, -157, 25}
+@endcode
+
+## Array initialization
+
+The array is by default *default-initialized*, which means that trivial types
+are not initialized at all and default constructor is called on other types. It
+is possible to initialize the array in a different way using so-called *tags*:
+
+-   @ref Array(DefaultInitT, std::size_t) is equivalent to the default case
+    (useful when you want to make the choice appear explicit).
+-   @ref Array(ValueInitT, std::size_t) zero-initializes trivial types and
+    calls default constructor elsewhere.
+-   @ref Array(DirectInitT, std::size_t, Args...) constructs all elements of
+    the array using provided arguments.
+-   @ref Array(NoInitT, std::size_t) does not initialize anything and you need
+    to call the constructor on all elements manually using placement new,
+    `std::uninitialized_copy` or similar. This is the dangerous option.
+
+Example:
+@code
+// These are equivalent
+Containers::Array<int> a1{5};
+Containers::Array<int> a2{Containers::DefaultInit, 5};
+
+// Array of 100 zeros
+Containers::Array<int> b{Containers::ValueInit, 100};
+
+// Array of type with no default constructor
+struct Vec3 {
+    Vec3(float, float, float);
+};
+Containers::Array<Vec3> c{Containers::DirectInit, 5, 5.2f, 0.4f, 1.0f};
+
+// Manual construction of each element
+struct Foo {
+    Foo(int index);
+};
+Containers::Array<Foo> d{Containers::NoInit, 5};
+int index = 0;
+for(Foo& f: d) new(&f) Foo(index++);
 @endcode
 
 @todo Something like ArrayTuple to create more than one array with single
@@ -82,32 +123,24 @@ template<class T> class Array {
             return fromInternal(std::forward<U>(values)...);
         }
 
+        #ifdef CORRADE_BUILD_DEPRECATED
         /**
-         * @brief Create zero-initialized array
-         *
-         * Creates array of given size, the values are value-initialized
-         * (i.e. builtin types are zero-initialized). For other than builtin
-         * types this is the same as @ref Array(std::size_t). If the size is
-         * zero, no allocation is done.
+         * @copybrief Array(ValueInitT, std::size_t)
+         * @deprecated Use @ref Array(ValueInitT, std::size_t) instead.
          */
-        static Array<T> zeroInitialized(std::size_t size) {
-            if(!size) {
-                #ifndef CORRADE_GCC45_COMPATIBILITY
-                return nullptr;
-                #else
-                return {};
-                #endif
-            }
-
-            Array<T> array;
-            array._data = new T[size]();
-            array._size = size;
-            return array;
+        CORRADE_DEPRECATED("use Array(ValueInitT, std::size_t) instead") static Array<T> zeroInitialized(std::size_t size) {
+            return Array<T>{ValueInit, size};
         }
+        #endif
 
         #ifndef CORRADE_GCC45_COMPATIBILITY
         /** @brief Conversion from nullptr */
-        /*implicit*/ Array(std::nullptr_t) noexcept: _data(nullptr), _size(0) {}
+        #ifdef DOXYGEN_GENERATING_OUTPUT
+        /*implicit*/ Array(std::nullptr_t) noexcept:
+        #else
+        template<class U, class V = typename std::enable_if<std::is_same<std::nullptr_t, U>::value>::type> /*implicit*/ Array(U) noexcept:
+        #endif
+            _data(nullptr), _size(0) {}
         #endif
 
         /**
@@ -119,17 +152,60 @@ template<class T> class Array {
         /*implicit*/ Array() noexcept: _data(nullptr), _size(0) {}
 
         /**
-         * @brief Constructor
+         * @brief Construct default-initialized array
          *
-         * Creates array of given size, the values are default-initialized
+         * Creates array of given size, the contents are default-initialized
          * (i.e. builtin types are not initialized). If the size is zero, no
          * allocation is done.
-         * @note Due to ambiguity you can't call directly `Array(0)` because
-         *      it conflicts with Array(std::nullptr_t). You should call
-         *      `Array(nullptr)` instead, which is also `noexcept`.
-         * @see @ref zeroInitialized()
+         * @see @ref DefaultInit, @ref Array(ValueInitT, std::size_t)
          */
-        explicit Array(std::size_t size): _data(size ? new T[size] : nullptr), _size(size) {}
+        explicit Array(DefaultInitT, std::size_t size): _data{size ? new T[size] : nullptr}, _size{size} {}
+
+        /**
+         * @brief Construct value-initialized array
+         *
+         * Creates array of given size, the contents are value-initialized
+         * (i.e. builtin types are zero-initialized). For other than builtin
+         * types this is the same as @ref Array(std::size_t). If the size is
+         * zero, no allocation is done.
+         *
+         * Useful if you want to create an array of primitive types and sett
+         * them to zero.
+         * @see @ref ValueInit, @ref Array(DefaultInitT, std::size_t)
+         */
+        explicit Array(ValueInitT, std::size_t size): _data{size ? new T[size]() : nullptr}, _size{size} {}
+
+        /**
+         * @brief Construct the array without initializing its contents
+         *
+         * Creates array of given size, the contents are *not* initialized. If
+         * the size is zero, no allocation is done. Initialize the values using
+         * placement new.
+         *
+         * Useful if you will be overwriting all elements later anyway.
+         * @attention The destructor will be called on all values regardless of
+         *      whether they were properly initialized or not.
+         * @see @ref NoInit, @ref Array(NoInitT, std::size_t)
+         */
+        explicit Array(NoInitT, std::size_t size): _data{size ? reinterpret_cast<T*>(new char[size*sizeof(T)]) : nullptr}, _size{size} {}
+
+        /**
+         * @brief Construct direct-initialized array
+         *
+         * Each element will be initialized using @p arguments instead of
+         * calling default constructor. Note that because the arguments may be
+         * used as a parameter in more than one constructor call, they are not
+         * forwarded (i.e. rvalue references are *not* preserved).
+         */
+        template<class... Args> explicit Array(DirectInitT, std::size_t size, Args... args);
+
+        /**
+         * @brief Construct default-initialized array
+         *
+         * Alias to @ref Array(DefaultInitT, std::size_t).
+         * @see @ref Array(ValueInitT, std::size_t)
+         */
+        explicit Array(std::size_t size): Array{DefaultInit, size} {}
 
         ~Array() { delete[] _data; }
 
@@ -333,6 +409,11 @@ template<class T> inline Array<T>::Array(const Array<T>& other): _data(other._da
     const_cast<Array<T>&>(other)._size = 0;
 }
 #endif
+
+template<class T> template<class ...Args> Array<T>::Array(DirectInitT, std::size_t size, Args... args): Array{NoInit, size} {
+    for(std::size_t i = 0; i != size; ++i)
+        new(_data + i) T{args...};
+}
 
 template<class T> inline Array<T>& Array<T>::operator=(Array<T>&& other) noexcept {
     using std::swap;

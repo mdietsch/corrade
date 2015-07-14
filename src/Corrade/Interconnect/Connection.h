@@ -46,7 +46,7 @@ namespace Implementation {
         friend struct SignalDataHash;
 
         public:
-            static const std::size_t Size = 2*sizeof(void*)/sizeof(std::size_t);
+            enum: std::size_t { Size = 2*sizeof(void*)/sizeof(std::size_t) };
 
             #ifndef CORRADE_MSVC2013_COMPATIBILITY
             template<class Emitter, class ...Args> SignalData(typename Emitter::Signal(Emitter::*signal)(Args...)): data() {

@@ -49,7 +49,7 @@ implicitly constructible also from const references to @ref Array and
 
 Usage example:
 @code
-// `a` gets implicitly converted to const array reference
+// `a` gets implicitly converted to const array view
 void printArray(Containers::ArrayView<const float> values) { ... }
 Containers::Array<float> a;
 printArray(a);
@@ -83,8 +83,8 @@ template<class T> class ArrayView {
         /**
          * @brief Default constructor
          *
-         * Creates empty reference. Copy non-empty @ref Array or
-         * @ref ArrayView onto the instance to make it useful.
+         * Creates empty view. Copy non-empty @ref Array or @ref ArrayView onto
+         * the instance to make it useful.
          */
         constexpr /*implicit*/ ArrayView() noexcept: _data(nullptr), _size(0) {}
 
@@ -96,43 +96,59 @@ template<class T> class ArrayView {
         constexpr /*implicit*/ ArrayView(T* data, std::size_t size) noexcept: _data(data), _size(size) {}
 
         /**
-         * @brief Construct reference to fixed-size array
+         * @brief Construct view of fixed-size array
          * @param data      Fixed-size array
+         *
+         * Enabled only if `U*` is implicitly convertible to `T*`.
          */
         #ifdef CORRADE_GCC46_COMPATIBILITY
         #define size size_ /* With GCC 4.6 it conflicts with size(). WTF. */
         #endif
-        template<std::size_t size> constexpr /*implicit*/ ArrayView(T(&data)[size]) noexcept: _data(data), _size(size) {}
+        #ifdef DOXYGEN_GENERATING_OUTPUT
+        template<class U, std::size_t size>
+        #else
+        template<class U, std::size_t size, class V = typename std::enable_if<std::is_convertible<U*, T*>::value>::type>
+        #endif
+        constexpr /*implicit*/ ArrayView(U(&data)[size]) noexcept: _data{data}, _size{size} {}
         #ifdef CORRADE_GCC46_COMPATIBILITY
         #undef size
         #endif
 
-        /** @brief Construct reference to @ref Array */
-        constexpr /*implicit*/ ArrayView(Array<T>& array) noexcept: _data(array), _size(array.size()) {}
-
         /**
-         * @brief Construct const reference to @ref Array
+         * @brief Construct view of @ref Array
          *
-         * Enabled only if @p T is `const U`.
+         * Enabled only if `U*` is implicitly convertible to `T*`.
          */
         #ifdef DOXYGEN_GENERATING_OUTPUT
         template<class U>
         #else
-        template<class U, class V = typename std::enable_if<std::is_same<const U, T>::value>::type>
+        template<class U, class V = typename std::enable_if<std::is_convertible<U*, T*>::value>::type>
         #endif
-        constexpr /*implicit*/ ArrayView(const Array<U>& array) noexcept: _data(array), _size(array.size()) {}
+        constexpr /*implicit*/ ArrayView(Array<U>& array) noexcept: _data{array}, _size{array.size()} {}
 
         /**
-         * @brief Construct const reference from non-const reference
+         * @brief Construct const view of @ref Array
          *
-         * Enabled only if @p T is `const U`.
+         * Enabled only if `const U*` is implicitly convertible to `T*`.
          */
         #ifdef DOXYGEN_GENERATING_OUTPUT
         template<class U>
         #else
-        template<class U, class V = typename std::enable_if<std::is_same<const U, T>::value>::type>
+        template<class U, class V = typename std::enable_if<std::is_convertible<const U*, T*>::value>::type>
         #endif
-        constexpr /*implicit*/ ArrayView(const ArrayView<U>& array) noexcept: _data(array), _size(array.size()) {}
+        constexpr /*implicit*/ ArrayView(const Array<U>& array) noexcept: _data{array}, _size{array.size()} {}
+
+        /**
+         * @brief Construct view of @ref ArrayView
+         *
+         * Enabled only if `U*` is implicitly convertible to `T*`.
+         */
+        #ifdef DOXYGEN_GENERATING_OUTPUT
+        template<class U>
+        #else
+        template<class U, class V = typename std::enable_if<std::is_convertible<U*, T*>::value>::type>
+        #endif
+        constexpr /*implicit*/ ArrayView(ArrayView<U> array) noexcept: _data{array}, _size{array.size()} {}
 
         #if !defined(CORRADE_GCC44_COMPATIBILITY) && !defined(CORRADE_MSVC2013_COMPATIBILITY)
         /* Disabled on GCC 4.4 to avoid ambiguity with operator T*() (no
@@ -213,7 +229,7 @@ template<class T> class ArrayView {
 };
 
 /**
-@brief Constant void array reference wrapper with size information
+@brief Constant void array view with size information
 
 Specialization of @ref ArrayView which is convertible from @ref Array or
 @ref ArrayView of any type. Size for particular type is recalculated to
@@ -261,7 +277,7 @@ template<> class ArrayView<const void> {
         template<class T> constexpr /*implicit*/ ArrayView(const T* data, std::size_t size) noexcept: _data(data), _size(size*sizeof(T)) {}
 
         /**
-         * @brief Construct reference to fixed-size array
+         * @brief Construct view on fixed-size array
          * @param data      Fixed-size array
          *
          * Size in bytes is calculated automatically.
@@ -274,10 +290,10 @@ template<> class ArrayView<const void> {
         #undef size
         #endif
 
-        /** @brief Construct const void reference to any @ref Array */
+        /** @brief Construct const void view on any @ref Array */
         template<class T> constexpr /*implicit*/ ArrayView(const Array<T>& array) noexcept: _data(array), _size(array.size()*sizeof(T)) {}
 
-        /** @brief Construct const void reference to any @ref ArrayView */
+        /** @brief Construct const void view on any @ref ArrayView */
         template<class T> constexpr /*implicit*/ ArrayView(const ArrayView<T>& array) noexcept: _data(array), _size(array.size()*sizeof(T)) {}
 
         #if !defined(CORRADE_GCC44_COMPATIBILITY) && !defined(CORRADE_MSVC2013_COMPATIBILITY)
