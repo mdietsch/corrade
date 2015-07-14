@@ -205,7 +205,13 @@ template<class T> class Array {
          * Alias to @ref Array(DefaultInitT, std::size_t).
          * @see @ref Array(ValueInitT, std::size_t)
          */
-        explicit Array(std::size_t size): Array{DefaultInit, size} {}
+        explicit Array(std::size_t size):
+            #ifndef CORRADE_GCC46_COMPATIBILITY
+            Array{DefaultInit, size}
+            #else
+            _data{size ? new T[size] : nullptr}, _size{size}
+            #endif
+            {}
 
         ~Array() { delete[] _data; }
 
@@ -410,7 +416,13 @@ template<class T> inline Array<T>::Array(const Array<T>& other): _data(other._da
 }
 #endif
 
-template<class T> template<class ...Args> Array<T>::Array(DirectInitT, std::size_t size, Args... args): Array{NoInit, size} {
+template<class T> template<class ...Args> Array<T>::Array(DirectInitT, std::size_t size, Args... args):
+    #ifndef CORRADE_GCC46_COMPATIBILITY
+    Array{NoInit, size}
+    #else
+    _data{size ? reinterpret_cast<T*>(new char[size*sizeof(T)]) : nullptr}, _size{size}
+    #endif
+{
     for(std::size_t i = 0; i != size; ++i)
         new(_data + i) T{args...};
 }
