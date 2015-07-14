@@ -146,10 +146,13 @@ void ArrayViewTest::constructArray() {
     CORRADE_COMPARE(cb.size(), 5);
 }
 
-void ArrayViewTest::constructDerived() {
+namespace {
+    /* GCC 4.4 has no support for local types as template arguments */
     struct A { int i; };
     struct B: A {};
+}
 
+void ArrayViewTest::constructDerived() {
     B b[5] {};
     const Containers::ArrayView<A> a{b};
     CORRADE_VERIFY(a.begin() == b);
