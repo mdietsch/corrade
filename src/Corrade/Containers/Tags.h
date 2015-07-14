@@ -29,6 +29,8 @@
  * @brief Tag type @ref Corrade::Containers::ValueInitT, @ref Corrade::Containers::DefaultInitT, @ref Corrade::Containers::NoInitT, @ref Corrade::Containers::DirectInitT, tag @ref Corrade::Containers::ValueInit, @ref Corrade::Containers::DefaultInit, @ref Corrade::Containers::NoInit, @ref Corrade::Containers::DirectInit
  */
 
+#include "Corrade/compatibility.h"
+
 namespace Corrade { namespace Containers {
 
 /**
@@ -71,7 +73,12 @@ struct DirectInitT {};
 Use for construction using default initialization (builtin types are not
 initialized, others are default-constructed).
 */
-constexpr DefaultInitT DefaultInit{};
+#ifndef CORRADE_GCC45_COMPATIBILITY
+constexpr
+#else
+const
+#endif
+DefaultInitT DefaultInit{};
 
 /**
 @brief Value initialization tag
@@ -79,21 +86,36 @@ constexpr DefaultInitT DefaultInit{};
 Use for construction using value initialization (builtin types are zeroed out,
 others are default-constructed).
 */
-constexpr ValueInitT ValueInit{};
+#ifndef CORRADE_GCC45_COMPATIBILITY
+constexpr
+#else
+const
+#endif
+ValueInitT ValueInit{};
 
 /**
 @brief No initialization tag
 
 Use for construction with no initialization at all.
 */
-constexpr NoInitT NoInit{};
+#ifndef CORRADE_GCC45_COMPATIBILITY
+constexpr
+#else
+const
+#endif
+NoInitT NoInit{};
 
 /**
 @brief Direct initialization tag
 
 Use for construction with direct initialization.
 */
-constexpr DirectInitT DirectInit{};
+#ifndef CORRADE_GCC45_COMPATIBILITY
+constexpr
+#else
+const
+#endif
+DirectInitT DirectInit{};
 
 }}
 
