@@ -73,7 +73,7 @@ struct DirectInitT {};
 Use for construction using default initialization (builtin types are not
 initialized, others are default-constructed).
 */
-#ifndef CORRADE_GCC45_COMPATIBILITY
+#if !defined(CORRADE_GCC45_COMPATIBILITY) && !defined(CORRADE_MSVC2013_COMPATIBILITY)
 constexpr
 #else
 const
@@ -86,7 +86,7 @@ DefaultInitT DefaultInit{};
 Use for construction using value initialization (builtin types are zeroed out,
 others are default-constructed).
 */
-#ifndef CORRADE_GCC45_COMPATIBILITY
+#if !defined(CORRADE_GCC45_COMPATIBILITY) && !defined(CORRADE_MSVC2013_COMPATIBILITY)
 constexpr
 #else
 const
@@ -98,7 +98,7 @@ ValueInitT ValueInit{};
 
 Use for construction with no initialization at all.
 */
-#ifndef CORRADE_GCC45_COMPATIBILITY
+#if !defined(CORRADE_GCC45_COMPATIBILITY) && !defined(CORRADE_MSVC2013_COMPATIBILITY)
 constexpr
 #else
 const
@@ -110,7 +110,7 @@ NoInitT NoInit{};
 
 Use for construction with direct initialization.
 */
-#ifndef CORRADE_GCC45_COMPATIBILITY
+#if !defined(CORRADE_GCC45_COMPATIBILITY) && !defined(CORRADE_MSVC2013_COMPATIBILITY)
 constexpr
 #else
 const
