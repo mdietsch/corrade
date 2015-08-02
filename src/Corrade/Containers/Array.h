@@ -287,7 +287,7 @@ template<class T> class Array {
 
         /** @overload */
         /*implicit*/ operator const T*() const
-        #ifndef CORRADE_GCC47_COMPATIBILITY
+        #if !defined(CORRADE_GCC47_COMPATIBILITY) && !defined(CORRADE_MSVC2013_COMPATIBILITY)
         &
         #endif
         { return _data; }
