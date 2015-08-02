@@ -315,11 +315,11 @@ template<class T> class Array {
          * Equivalent to @ref ArrayView::slice().
          */
         ArrayView<T> slice(T* begin, T* end) {
-            return ArrayView<T>{*this}.slice(begin, end);
+            return ArrayView<T>(*this).slice(begin, end);
         }
         /** @overload */
         ArrayView<const T> slice(const T* begin, const T* end) const {
-            return ArrayView<const T>{*this}.slice(begin, end);
+            return ArrayView<const T>(*this).slice(begin, end);
         }
         /** @overload */
         ArrayView<T> slice(std::size_t begin, std::size_t end) {
@@ -336,11 +336,11 @@ template<class T> class Array {
          * Equivalent to @ref ArrayView::prefix().
          */
         ArrayView<T> prefix(T* end) {
-            return ArrayView<T>{*this}.prefix(end);
+            return ArrayView<T>(*this).prefix(end);
         }
         /** @overload */
         ArrayView<const T> prefix(const T* end) const {
-            return ArrayView<const T>{*this}.prefix(end);
+            return ArrayView<const T>(*this).prefix(end);
         }
         ArrayView<T> prefix(std::size_t end) { return prefix(_data + end); } /**< @overload */
         ArrayView<const T> prefix(std::size_t end) const { return prefix(_data + end); } /**< @overload */
@@ -351,11 +351,11 @@ template<class T> class Array {
          * Equivalent to @ref ArrayView::suffix().
          */
         ArrayView<T> suffix(T* begin) {
-            return ArrayView<T>{*this}.suffix(begin);
+            return ArrayView<T>(*this).suffix(begin);
         }
         /** @overload */
         ArrayView<const T> suffix(const T* begin) const {
-            return ArrayView<const T>{*this}.suffix(begin);
+            return ArrayView<const T>(*this).suffix(begin);
         }
         ArrayView<T> suffix(std::size_t begin) { return suffix(_data + begin); } /**< @overload */
         ArrayView<const T> suffix(std::size_t begin) const { return suffix(_data + begin); } /**< @overload */
