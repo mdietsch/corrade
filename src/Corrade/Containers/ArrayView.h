@@ -115,30 +115,6 @@ template<class T> class ArrayView {
         #endif
 
         /**
-         * @brief Construct view of @ref Array
-         *
-         * Enabled only if `U*` is implicitly convertible to `T*`.
-         */
-        #ifdef DOXYGEN_GENERATING_OUTPUT
-        template<class U>
-        #else
-        template<class U, class V = typename std::enable_if<std::is_convertible<U*, T*>::value>::type>
-        #endif
-        constexpr /*implicit*/ ArrayView(Array<U>& array) noexcept: _data{array}, _size{array.size()} {}
-
-        /**
-         * @brief Construct const view of @ref Array
-         *
-         * Enabled only if `const U*` is implicitly convertible to `T*`.
-         */
-        #ifdef DOXYGEN_GENERATING_OUTPUT
-        template<class U>
-        #else
-        template<class U, class V = typename std::enable_if<std::is_convertible<const U*, T*>::value>::type>
-        #endif
-        constexpr /*implicit*/ ArrayView(const Array<U>& array) noexcept: _data{array}, _size{array.size()} {}
-
-        /**
          * @brief Construct view of @ref ArrayView
          *
          * Enabled only if `U*` is implicitly convertible to `T*`.
@@ -289,9 +265,6 @@ template<> class ArrayView<const void> {
         #ifdef CORRADE_GCC46_COMPATIBILITY
         #undef size
         #endif
-
-        /** @brief Construct const void view on any @ref Array */
-        template<class T> constexpr /*implicit*/ ArrayView(const Array<T>& array) noexcept: _data(array), _size(array.size()*sizeof(T)) {}
 
         /** @brief Construct const void view on any @ref ArrayView */
         template<class T> constexpr /*implicit*/ ArrayView(const ArrayView<T>& array) noexcept: _data(array), _size(array.size()*sizeof(T)) {}

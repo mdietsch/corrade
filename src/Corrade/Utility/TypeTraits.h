@@ -72,7 +72,6 @@ template<class U> class className {                                         \
     static short get(...);                                                  \
     public:                                                                 \
         enum: bool { Value = sizeof(get(std::declval<U>())) == sizeof(char) }; \
-        constexpr operator bool() const { return Value; } \
 }
 #else
 #define CORRADE_HAS_TYPE(className, typeExpression)                         \
@@ -114,22 +113,24 @@ members, is usable with free `begin()`/`end()` functions or has
 `std::false_type`.
 */
 #if !defined(CORRADE_GCC46_COMPATIBILITY) && !defined(CORRADE_MSVC2013_COMPATIBILITY)
+/* When using {}, MSVC 2015 complains that even the explicitly defaulted
+   constructor doesn't exist */
 template<class T> using IsIterable = std::integral_constant<bool,
-    (Implementation::HasMemberBegin<T>{} ||
+    (Implementation::HasMemberBegin<T>::Value ||
     #ifndef CORRADE_GCC47_COMPATIBILITY
-    Implementation::HasBegin<T>{} ||
+    Implementation::HasBegin<T>::Value ||
     #endif
-    Implementation::HasStdBegin<T>{}) && (Implementation::HasMemberEnd<T>{} ||
+    Implementation::HasStdBegin<T>::Value) && (Implementation::HasMemberEnd<T>::Value ||
     #ifndef CORRADE_GCC47_COMPATIBILITY
-    Implementation::HasEnd<T>{} ||
+    Implementation::HasEnd<T>::Value ||
     #endif
-    Implementation::HasStdEnd<T>{})>;
+    Implementation::HasStdEnd<T>::Value)>;
 #elif defined(CORRADE_MSVC2013_COMPATIBILITY)
 template<class T> struct IsIterable: public std::integral_constant<bool,
     (Implementation::HasMemberBegin<T>::Value || Implementation::HasBegin<T>::Value || Implementation::HasStdBegin<T>::Value) &&
     (Implementation::HasMemberEnd<T>::Value || Implementation::HasEnd<T>::Value || Implementation::HasStdEnd<T>::Value)> {};
 #elif !defined(CORRADE_GCC45_COMPATIBILITY)
-template<class T> struct IsIterable: public std::integral_constant<bool, (Implementation::HasMemberBegin<T>{} || Implementation::HasStdBegin<T>{}) && (Implementation::HasMemberEnd<T>{} || Implementation::HasStdEnd<T>{})> {};
+template<class T> struct IsIterable: public std::integral_constant<bool, (Implementation::HasMemberBegin<T>::Value || Implementation::HasStdBegin<T>::Value) && (Implementation::HasMemberEnd<T>::Value || Implementation::HasStdEnd<T>::Value)> {};
 #else
 template<class T> struct IsIterable: public std::integral_constant<bool, Implementation::HasMemberBegin<T>::Value && Implementation::HasMemberEnd<T>::Value> {};
 #endif

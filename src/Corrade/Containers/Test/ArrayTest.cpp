@@ -38,6 +38,7 @@ struct ArrayTest: TestSuite::Tester {
     void constructNoInit();
     void constructDirectInit();
     void construct();
+    void constructFromExisting();
     void constructZeroSize();
     void constructMove();
     void constructFrom();
@@ -65,6 +66,7 @@ ArrayTest::ArrayTest() {
               &ArrayTest::constructNoInit,
               &ArrayTest::constructDirectInit,
               &ArrayTest::construct,
+              &ArrayTest::constructFromExisting,
               &ArrayTest::constructZeroSize,
               &ArrayTest::constructMove,
               &ArrayTest::constructFrom,
@@ -114,6 +116,13 @@ void ArrayTest::construct() {
 
     /* Implicit construction from std::size_t is not allowed */
     CORRADE_VERIFY(!(std::is_convertible<std::size_t, Array>::value));
+}
+
+void ArrayTest::constructFromExisting() {
+    int* a = new int[25];
+    Array b{a, 25};
+    CORRADE_COMPARE(b, a);
+    CORRADE_COMPARE(b.size(), 25);
 }
 
 void ArrayTest::constructDefaultInit() {
@@ -220,7 +229,7 @@ void ArrayTest::pointerConversion() {
 
     /* Pointer arithmetic */
     const Array e(3);
-    const int* f = e + std::size_t{2};
+    const int* f = e + 2;
     CORRADE_COMPARE(f, &e[2]);
 
     /* Verify that we can't convert rvalues */

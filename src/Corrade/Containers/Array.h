@@ -213,6 +213,13 @@ template<class T> class Array {
             #endif
             {}
 
+        /**
+         * @brief Wrap existing array
+         *
+         * Note that the array will be deleted on destruction.
+         */
+        explicit Array(T* data, std::size_t size): _data{data}, _size{size} {}
+
         ~Array() { delete[] _data; }
 
         /** @brief Copying is not allowed */
@@ -240,6 +247,33 @@ template<class T> class Array {
         constexpr explicit operator bool() const { return _data; }
         #endif
 
+        /**
+         * @brief Convert to @ref ArrayView
+         *
+         * Enabled only if `T*` is implicitly convertible to `U*`.
+         */
+        #ifdef DOXYGEN_GENERATING_OUTPUT
+        template<class U>
+        #else
+        template<class U, class V = typename std::enable_if<std::is_convertible<T*, U*>::value>::type>
+        #endif
+        /*implicit*/ operator ArrayView<U>() noexcept { return {_data, _size}; }
+
+        /**
+         * @brief Convert to const @ref ArrayView
+         *
+         * Enabled only if `const T*` is implicitly convertible to `U*`.
+         */
+        #ifdef DOXYGEN_GENERATING_OUTPUT
+        template<class U>
+        #else
+        template<class U, class V = typename std::enable_if<std::is_convertible<T*, U*>::value>::type>
+        #endif
+        /*implicit*/ operator ArrayView<const U>() const noexcept { return {_data, _size}; }
+
+        /** @brief Convert to const void @ref ArrayView */
+        /*implicit*/ operator ArrayView<const void>() const noexcept { return {_data, _size*sizeof(T)}; }
+
         /* `char* a = Containers::Array<char>(5); a[3] = 5;` would result in
            instant segfault, disallowing it in the following conversion
            operators */
@@ -252,7 +286,11 @@ template<class T> class Array {
         { return _data; }
 
         /** @overload */
-        /*implicit*/ operator const T*() const { return _data; }
+        /*implicit*/ operator const T*() const
+        #ifndef CORRADE_GCC47_COMPATIBILITY
+        &
+        #endif
+        { return _data; }
 
         /** @brief Array data */
         T* data() { return _data; }
@@ -359,8 +397,8 @@ template<class T> class Array {
  */
 #ifndef CORRADE_GCC46_COMPATIBILITY
 #ifndef CORRADE_MSVC2013_COMPATIBILITY
-/* MSVC 2013 cannot handle multiple definitions of (and attributes for) template aliases */
-template<class T> using ArrayReference CORRADE_DEPRECATED("use ArrayView.h and ArrayView instead") = ArrayView<T>;
+/* MSVC 2013 cannot handle multiple definitions of template aliases */
+template<class T> using ArrayReference CORRADE_DEPRECATED_ALIAS("use ArrayView.h and ArrayView instead") = ArrayView<T>;
 #endif
 #else
 /* Uh. Just copied over and delegating to ArrayView constructors */
@@ -378,8 +416,6 @@ template<class T> class CORRADE_DEPRECATED("use ArrayView.h and ArrayView instea
         #ifdef CORRADE_GCC46_COMPATIBILITY
         #undef size
         #endif
-        constexpr /*implicit*/ ArrayReference(Array<T>& array) noexcept: ArrayView<T>{array} {}
-        template<class U, class V = typename std::enable_if<std::is_same<const U, T>::value>::type> constexpr /*implicit*/ ArrayReference(const Array<U>& array) noexcept: ArrayView<T>{array} {}
         template<class U, class V = typename std::enable_if<std::is_same<const U, T>::value>::type> constexpr /*implicit*/ ArrayReference(const ArrayView<U>& array) noexcept: ArrayView<T>{array} {}
 };
 template<> class CORRADE_DEPRECATED("use ArrayView.h and ArrayView instead") ArrayReference<const void>: public ArrayView<const void> {
@@ -397,7 +433,6 @@ template<> class CORRADE_DEPRECATED("use ArrayView.h and ArrayView instead") Arr
         #ifdef CORRADE_GCC46_COMPATIBILITY
         #undef size
         #endif
-        template<class T> constexpr /*implicit*/ ArrayReference(const Array<T>& array) noexcept: ArrayView<const void>{array} {}
         template<class T> constexpr /*implicit*/ ArrayReference(const ArrayView<T>& array) noexcept: ArrayView<const void>{array} {}
 };
 #endif

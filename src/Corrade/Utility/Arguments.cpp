@@ -30,6 +30,9 @@
 #endif
 #include <cstdlib>
 #include <cstring>
+#ifdef _MSC_VER
+#include <algorithm> /* std::max() */
+#endif
 #include <iomanip>
 #include <sstream>
 
