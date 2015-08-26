@@ -52,7 +52,7 @@ Does not work on template aliases and enum values, use
 #define CORRADE_DEPRECATED(message) __attribute((deprecated))
 #endif
 #elif defined(_MSC_VER)
-#define CORRADE_DEPRECATED(message) __declspec((deprecated(message)))
+#define CORRADE_DEPRECATED(message) __declspec(deprecated(message))
 #else
 #define CORRADE_DEPRECATED(message)
 #endif
