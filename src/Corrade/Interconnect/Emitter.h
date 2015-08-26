@@ -258,7 +258,13 @@ class CORRADE_INTERCONNECT_EXPORT Emitter {
          *      @ref Connection::isConnected(), @ref signalConnectionCount()
          */
         template<class Emitter, class ...Args> bool hasSignalConnections(Signal(Emitter::*signal)(Args...)) const {
-            return connections.count(Implementation::SignalData(signal)) != 0;
+            return connections.count(
+                #ifndef CORRADE_MSVC2015_COMPATIBILITY
+                Implementation::SignalData(signal)
+                #else
+                Implementation::SignalData::create<Emitter, Args...>(signal)
+                #endif
+                ) != 0;
         }
 
         /**
@@ -276,7 +282,13 @@ class CORRADE_INTERCONNECT_EXPORT Emitter {
          *      @ref hasSignalConnections()
          */
         template<class Emitter, class ...Args> std::size_t signalConnectionCount(Signal(Emitter::*signal)(Args...)) const {
-            return connections.count(Implementation::SignalData(signal));
+            return connections.count(
+                #ifndef CORRADE_MSVC2015_COMPATIBILITY
+                Implementation::SignalData(signal)
+                #else
+                Implementation::SignalData::create<Emitter, Args...>(signal)
+                #endif
+                );
         }
 
         /**
@@ -295,7 +307,13 @@ class CORRADE_INTERCONNECT_EXPORT Emitter {
          *      @ref hasSignalConnections()
          */
         template<class Emitter, class ...Args> void disconnectSignal(Signal(Emitter::*signal)(Args...)) {
-            disconnectInternal(Implementation::SignalData(signal));
+            disconnectInternal(
+                #ifndef CORRADE_MSVC2015_COMPATIBILITY
+                Implementation::SignalData(signal)
+                #else
+                Implementation::SignalData::create<Emitter, Args...>(signal)
+                #endif
+                );
         }
 
         /**
@@ -343,7 +361,7 @@ namespace Implementation {
 
 class CORRADE_INTERCONNECT_EXPORT AbstractConnectionData {
     template<class...> friend class FunctionConnectionData;
-    template<class...> friend class MemberConnectionData;
+    template<class, class...> friend class MemberConnectionData;
     /* GCC 4.6 needs the class keyword */
     friend class Interconnect::Connection;
     friend class Interconnect::Emitter;
@@ -377,24 +395,44 @@ class AbstractMemberConnectionData: public AbstractConnectionData {
     public:
         template<class Emitter, class Receiver> explicit AbstractMemberConnectionData(Emitter* emitter, Receiver* receiver): AbstractConnectionData(emitter, Type::Member), receiver(receiver) {}
 
-    protected:
+    private:
         Receiver* receiver;
 };
 
-template<class ...Args> class MemberConnectionData: public AbstractMemberConnectionData {
+template<class ...Args> class BaseMemberConnectionData: public AbstractMemberConnectionData {
+    /* GCC 4.6 needs the class keyword */
+    friend class Interconnect::Emitter;
+
+    public:
+        template<class Emitter, class Receiver> explicit BaseMemberConnectionData(Emitter* emitter, Receiver* receiver): AbstractMemberConnectionData(emitter, receiver) {}
+
+    private:
+        virtual void handle(Args... args) = 0;
+};
+
+#if defined(__GNUC__) && !defined(__clang__)
+/* GCC complains that this function is used but never defined. Clang is sane.
+   MSVC too. WHAT THE FUCK, GCC? */
+template<class ...Args> void BaseMemberConnectionData<Args...>::handle(Args...) {
+    CORRADE_ASSERT_UNREACHABLE();
+}
+#endif
+
+template<class Receiver, class ...Args> class MemberConnectionData: public BaseMemberConnectionData<Args...> {
     /* GCC 4.6 needs the class keyword */
     friend class Interconnect::Emitter;
 
     public:
         typedef void(Receiver::*Slot)(Args...);
 
-        template<class Emitter, class Receiver> explicit MemberConnectionData(Emitter* emitter, Receiver* receiver, void(Receiver::*slot)(Args...)): AbstractMemberConnectionData(emitter, receiver), slot(static_cast<Slot>(slot)) {}
+        template<class Emitter> explicit MemberConnectionData(Emitter* emitter, Receiver* receiver, void(Receiver::*slot)(Args...)): BaseMemberConnectionData<Args...>(emitter, receiver), receiver(receiver), slot(slot) {}
 
     private:
-        void handle(Args... args) {
+        void handle(Args... args) override final {
             (receiver->*slot)(args...);
         }
 
+        Receiver* receiver;
         const Slot slot;
 };
 
@@ -438,7 +476,11 @@ template<class EmitterObject, class Emitter, class ...Args> Connection connect(E
     static_assert(std::is_base_of<Emitter, EmitterObject>::value,
         "Emitter object doesn't have given signal");
 
+    #ifndef CORRADE_MSVC2015_COMPATIBILITY
     Implementation::SignalData signalData(signal);
+    #else
+    auto signalData = Implementation::SignalData::create<EmitterObject, Args...>(signal);
+    #endif
     auto data = new Implementation::FunctionConnectionData<Args...>(&emitter, slot);
     Interconnect::Emitter::connectInternal(signalData, data);
     return Connection(signalData, data);
@@ -479,8 +521,12 @@ template<class EmitterObject, class Emitter, class Receiver, class ReceiverObjec
     static_assert(std::is_base_of<Receiver, ReceiverObject>::value,
         "Receiver object doesn't have given slot");
 
+    #ifndef CORRADE_MSVC2015_COMPATIBILITY
     Implementation::SignalData signalData(signal);
-    auto data = new Implementation::MemberConnectionData<Args...>(&emitter, &receiver, static_cast<void(ReceiverObject::*)(Args...)>(slot));
+    #else
+    auto signalData = Implementation::SignalData::create<EmitterObject, Args...>(signal);
+    #endif
+    auto data = new Implementation::MemberConnectionData<ReceiverObject, Args...>(&emitter, &receiver, slot);
     Interconnect::Emitter::connectInternal(signalData, data);
     return Connection(signalData, data);
 }
@@ -489,7 +535,13 @@ template<class EmitterObject, class Emitter, class Receiver, class ReceiverObjec
 template<class Emitter_, class ...Args> Emitter::Signal Emitter::emit(Signal(Emitter_::*signal)(Args...), typename std::common_type<Args>::type... args) {
     connectionsChanged = false;
     ++lastHandledSignal;
-    auto range = connections.equal_range(Implementation::SignalData(signal));
+    auto range = connections.equal_range(
+        #ifndef CORRADE_MSVC2015_COMPATIBILITY
+        Implementation::SignalData(signal)
+        #else
+        Implementation::SignalData::create<Emitter_, Args...>(signal)
+        #endif
+        );
     auto it = range.first;
     while(it != range.second) {
         /* If not already handled, proceed and mark as such */
@@ -500,7 +552,7 @@ template<class Emitter_, class ...Args> Emitter::Signal Emitter::emit(Signal(Emi
                     static_cast<Implementation::FunctionConnectionData<Args...>*>(it->second)->handle(args...);
                     break;
                 case Implementation::AbstractConnectionData::Type::Member:
-                    static_cast<Implementation::MemberConnectionData<Args...>*>(it->second)->handle(args...);
+                    static_cast<Implementation::BaseMemberConnectionData<Args...>*>(it->second)->handle(args...);
                     break;
                 default:
                     CORRADE_ASSERT_UNREACHABLE();
@@ -508,7 +560,13 @@ template<class Emitter_, class ...Args> Emitter::Signal Emitter::emit(Signal(Emi
 
             /* Connections changed by the slot, go through again */
             if(connectionsChanged) {
-                range = connections.equal_range(Implementation::SignalData(signal));
+                range = connections.equal_range(
+                    #ifndef CORRADE_MSVC2015_COMPATIBILITY
+                    Implementation::SignalData(signal)
+                    #else
+                    Implementation::SignalData::create<Emitter_, Args...>(signal)
+                    #endif
+                    );
                 it = range.first;
                 connectionsChanged = false;
                 continue;

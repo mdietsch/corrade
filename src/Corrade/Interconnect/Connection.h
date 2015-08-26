@@ -48,14 +48,19 @@ namespace Implementation {
         public:
             enum: std::size_t { Size = 2*sizeof(void*)/sizeof(std::size_t) };
 
-            #ifndef CORRADE_MSVC2013_COMPATIBILITY
+            #ifndef CORRADE_MSVC2015_COMPATIBILITY
             template<class Emitter, class ...Args> SignalData(typename Emitter::Signal(Emitter::*signal)(Args...)): data() {
                 typedef typename Emitter::Signal(Emitter::*Signal)(Args...);
                 *reinterpret_cast<Signal*>(data) = signal;
             }
             #else
-            template<class F> SignalData(F signal): data() {
-               *reinterpret_cast<F*>(data) = signal;
+            /* MSVC 2015 is not able to detect template parameters, so I need
+               to shovel these in explicitly using "static constructor" */
+            template<class Emitter, class ...Args> static SignalData create(typename Emitter::Signal(Emitter::*signal)(Args...)) {
+                typedef typename Emitter::Signal(Emitter::*Signal)(Args...);
+                SignalData d;
+                *reinterpret_cast<Signal*>(d.data) = signal;
+                return d;
             }
             #endif
 
@@ -70,6 +75,10 @@ namespace Implementation {
             }
 
         private:
+            #ifdef CORRADE_MSVC2015_COMPATIBILITY
+            SignalData(): data() {}
+            #endif
+
             std::size_t data[Size];
     };
 }
