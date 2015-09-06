@@ -45,6 +45,8 @@ struct DebugTest: TestSuite::Tester {
     void flags();
 
     void iterable();
+    void tuple();
+
     void ostreamFallback();
     void ostreamFallbackPriority();
 };
@@ -58,6 +60,8 @@ DebugTest::DebugTest() {
               &DebugTest::flags,
 
               &DebugTest::iterable,
+              &DebugTest::tuple,
+
               &DebugTest::ostreamFallback,
               &DebugTest::ostreamFallbackPriority});
 }
@@ -148,6 +152,56 @@ void DebugTest::custom() {
     CORRADE_COMPARE(out.str(), "The answer is 42\n");
 }
 
+void DebugTest::flags() {
+    std::ostringstream out;
+    Debug::setOutput(&out);
+
+    {
+        /* Don't allow to set/reset the reserved flag */
+        Debug debug;
+        debug.setFlag(static_cast<Debug::Flag>(0x01), false);
+        CORRADE_VERIFY(debug.flag(static_cast<Debug::Flag>(0x01)));
+    } {
+        Debug debug;
+        debug.setFlag(Debug::SpaceAfterEachValue, false);
+        debug << "a" << "b" << "c";
+    }
+    CORRADE_COMPARE(out.str(), "abc\n");
+    out.str("");
+    {
+        Debug debug;
+        debug.setFlag(Debug::NewLineAtTheEnd, false);
+        debug << "a" << "b" << "c";
+    }
+    CORRADE_COMPARE(out.str(), "a b c");
+}
+
+void DebugTest::iterable() {
+    std::ostringstream out;
+    Debug::setOutput(&out);
+    Debug() << std::vector<int>{1, 2, 3};
+    CORRADE_COMPARE(out.str(), "{1, 2, 3}\n");
+
+    out.str({});
+    Debug() << std::set<std::string>{"a", "b", "c"};
+    CORRADE_COMPARE(out.str(), "{a, b, c}\n");
+
+    out.str({});
+    Debug() << std::map<int, std::string>{{1, "a"}, {2, "b"}, {3, "c"}};
+    CORRADE_COMPARE(out.str(), "{(1, a), (2, b), (3, c)}\n");
+}
+
+void DebugTest::tuple() {
+    std::ostringstream out;
+
+    Debug(&out) << std::make_tuple();
+    CORRADE_COMPARE(out.str(), "()\n");
+
+    out.str({});
+    Debug(&out) << std::make_tuple(3, 4.56, std::string{"hello"});
+    CORRADE_COMPARE(out.str(), "(3, 4.56, hello)\n");
+}
+
 namespace {
 
 struct Bar {};
@@ -187,45 +241,6 @@ void DebugTest::ostreamFallbackPriority() {
 
     Debug() << Baz{};
     CORRADE_COMPARE(out.str(), "baz from Debug\n");
-}
-
-void DebugTest::flags() {
-    std::ostringstream out;
-    Debug::setOutput(&out);
-
-    {
-        /* Don't allow to set/reset the reserved flag */
-        Debug debug;
-        debug.setFlag(static_cast<Debug::Flag>(0x01), false);
-        CORRADE_VERIFY(debug.flag(static_cast<Debug::Flag>(0x01)));
-    } {
-        Debug debug;
-        debug.setFlag(Debug::SpaceAfterEachValue, false);
-        debug << "a" << "b" << "c";
-    }
-    CORRADE_COMPARE(out.str(), "abc\n");
-    out.str("");
-    {
-        Debug debug;
-        debug.setFlag(Debug::NewLineAtTheEnd, false);
-        debug << "a" << "b" << "c";
-    }
-    CORRADE_COMPARE(out.str(), "a b c");
-}
-
-void DebugTest::iterable() {
-    std::ostringstream out;
-    Debug::setOutput(&out);
-    Debug() << std::vector<int>{1, 2, 3};
-    CORRADE_COMPARE(out.str(), "{1, 2, 3}\n");
-
-    out.str({});
-    Debug() << std::set<std::string>{"a", "b", "c"};
-    CORRADE_COMPARE(out.str(), "{a, b, c}\n");
-
-    out.str({});
-    Debug() << std::map<int, std::string>{{1, "a"}, {2, "b"}, {3, "c"}};
-    CORRADE_COMPARE(out.str(), "{(1, a), (2, b), (3, c)}\n");
 }
 
 }}}
