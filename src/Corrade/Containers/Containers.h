@@ -46,6 +46,7 @@ template<class T> using ArrayReference CORRADE_DEPRECATED_ALIAS("use ArrayView.h
 #else
 template<class> class CORRADE_DEPRECATED("use ArrayView.h and ArrayView instead") ArrayReference;
 #endif
+#endif
 
 template<class, class U, U fullValue = U(~0)> class EnumSet;
 template<class> class LinkedList;
