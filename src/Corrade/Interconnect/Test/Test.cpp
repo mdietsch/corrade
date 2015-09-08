@@ -37,6 +37,7 @@ struct Test: TestSuite::Tester {
     explicit Test();
 
     void signalData();
+    void templatedSignalData();
 
     void connect();
 
@@ -74,6 +75,34 @@ class Postman: public Interconnect::Emitter {
         }
 };
 
+class TemplatedPostman: public Interconnect::Emitter {
+    public:
+        template<class T> Signal newMessage(int price, const std::string& message) {
+            #ifdef _MSC_VER /* See _functionHash for explanation */
+            _functionHash = sizeof(T);
+            #endif
+            return emit(&TemplatedPostman::newMessage<T>, price, message);
+        }
+
+        template<class T> Signal oldMessage(int price, const std::string& message) {
+            #ifdef _MSC_VER /* See _functionHash for explanation */
+            _functionHash = sizeof(T)*2;
+            #endif
+            return emit(&TemplatedPostman::oldMessage<T>, price, message);
+        }
+
+    private:
+        #ifdef _MSC_VER
+        /* MSVC has an optimization (/OPT:ICF) that merges functions with
+           identical instructions. That would prevent template signals from
+           working, thus we need to do some otherwise useless work to
+           differentiate them. Ugly as hell but better than disabling the
+           optimization globally. Details:
+           http://blogs.msdn.com/b/oldnewthing/archive/2005/03/22/400373.aspx */
+        int _functionHash;
+        #endif
+};
+
 class Mailbox: public Interconnect::Receiver {
     public:
         Mailbox(): money(0) {}
@@ -93,6 +122,7 @@ class Mailbox: public Interconnect::Receiver {
 
 Test::Test() {
     addTests<Test>({&Test::signalData,
+              &Test::templatedSignalData,
 
               &Test::connect,
 
@@ -123,9 +153,9 @@ void Test::signalData() {
     Implementation::SignalData data2(&Postman::newMessage);
     Implementation::SignalData data3(&Postman::paymentRequested);
     #else
-    auto data1 = Implementation::SignalData::create<Postman, int, const std::string&>(&Postman::newMessage);
-    auto data2 = Implementation::SignalData::create<Postman, int, const std::string&>(&Postman::newMessage);
-    auto data3 = Implementation::SignalData::create<Postman, int>(&Postman::paymentRequested);
+    auto data1 = Implementation::SignalData::create<Postman>(&Postman::newMessage);
+    auto data2 = Implementation::SignalData::create<Postman>(&Postman::newMessage);
+    auto data3 = Implementation::SignalData::create<Postman>(&Postman::paymentRequested);
     #endif
 
     CORRADE_VERIFY(data1 == data1);
@@ -138,6 +168,22 @@ void Test::signalData() {
     CORRADE_VERIFY(Implementation::SignalDataHash()(data1) == Implementation::SignalDataHash()(data1));
     CORRADE_VERIFY(Implementation::SignalDataHash()(data1) == Implementation::SignalDataHash()(data2));
     CORRADE_VERIFY(Implementation::SignalDataHash()(data1) != Implementation::SignalDataHash()(data3));
+}
+
+void Test::templatedSignalData()
+{
+    #ifndef CORRADE_MSVC2015_COMPATIBILITY
+    Implementation::SignalData data1(&TemplatedPostman::newMessage<std::int32_t>);
+    Implementation::SignalData data2(&TemplatedPostman::newMessage<std::string>);
+    Implementation::SignalData data3(&TemplatedPostman::oldMessage2std::int32_t>);
+    #else
+    auto data1 = Implementation::SignalData::create<TemplatedPostman>(&TemplatedPostman::newMessage<std::int32_t>);
+    auto data2 = Implementation::SignalData::create<TemplatedPostman>(&TemplatedPostman::newMessage<std::string>);
+    auto data3 = Implementation::SignalData::create<TemplatedPostman>(&TemplatedPostman::oldMessage<std::int32_t>);
+    #endif
+
+    CORRADE_VERIFY(data1 != data2);
+    CORRADE_VERIFY(data1 != data3);
 }
 
 void Test::connect() {
@@ -447,16 +493,6 @@ void Test::virtualSlot() { /* Local types are not allowed as template arguments 
 
     delete mailbox;
 }
-
-#ifndef CORRADE_GCC44_COMPATIBILITY
-/* Local classes apparently cannot have templated methods */
-class TemplatedPostman: public Interconnect::Emitter {
-    public:
-        template<class T> Signal newMessage(int price, const std::string& message) {
-            return emit(&TemplatedPostman::newMessage<T>, price, message);
-        }
-};
-#endif
 
 void Test::templatedSignal() {
     /** @todo Fix this for GCC 4.4 */

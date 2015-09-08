@@ -239,12 +239,12 @@ template<class T> class Array {
         /** @brief Move assignment */
         Array<T>& operator=(Array<T>&&) noexcept;
 
-        #if !defined(CORRADE_GCC44_COMPATIBILITY) && !defined(CORRADE_MSVC2013_COMPATIBILITY)
-        /* Disabled on GCC 4.4 to avoid ambiguity with operator T*() (no
-           explicit conversion operators). Disabled on MSVC 2013 to avoid
-           ambiguous operator+() when doing pointer arithmetic. */
+        #if !defined(CORRADE_GCC44_COMPATIBILITY) && !defined(CORRADE_MSVC2015_COMPATIBILITY)
         /** @brief Whether the array is non-empty */
-        constexpr explicit operator bool() const { return _data; }
+        /* Disabled on GCC 4.4 to avoid ambiguity with operator T*() (no
+           explicit conversion operators). Disabled on MSVC <= 2015 to avoid
+           ambiguous operator+() when doing pointer arithmetic. */
+        explicit operator bool() const { return _data; }
         #endif
 
         /**
@@ -393,8 +393,7 @@ template<class T> class Array {
  * @deprecated Use @ref ArrayView.h and @ref ArrayView instead.
  */
 #ifndef CORRADE_GCC46_COMPATIBILITY
-#ifndef CORRADE_MSVC2013_COMPATIBILITY
-/* MSVC 2013 cannot handle multiple definitions of template aliases */
+#ifndef CORRADE_MSVC2015_COMPATIBILITY /* Multiple definitions still broken */
 template<class T> using ArrayReference CORRADE_DEPRECATED_ALIAS("use ArrayView.h and ArrayView instead") = ArrayView<T>;
 #endif
 #else

@@ -126,11 +126,11 @@ template<class T> class ArrayView {
         #endif
         constexpr /*implicit*/ ArrayView(ArrayView<U> array) noexcept: _data{array}, _size{array.size()} {}
 
-        #if !defined(CORRADE_GCC44_COMPATIBILITY) && !defined(CORRADE_MSVC2013_COMPATIBILITY)
-        /* Disabled on GCC 4.4 to avoid ambiguity with operator T*() (no
-           explicit conversion operators). Disabled on MSVC 2013 to avoid
-           ambiguous operator+() when doing pointer arithmetic. */
+        #if !defined(CORRADE_GCC44_COMPATIBILITY) && !defined(CORRADE_MSVC2015_COMPATIBILITY)
         /** @brief Whether the array is non-empty */
+        /* Disabled on GCC 4.4 to avoid ambiguity with operator T*() (no
+           explicit conversion operators). Disabled on MSVC <= 2015 to avoid
+           ambiguous operator+() when doing pointer arithmetic. */
         constexpr explicit operator bool() const { return _data; }
         #endif
 

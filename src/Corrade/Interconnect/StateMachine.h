@@ -159,6 +159,9 @@ template<std::size_t states, std::size_t inputs, class State, class Input> class
          * @see @ref step()
          */
         template<State previous, State next> Signal stepped() {
+            #ifdef _MSC_VER /* See _functionHash for explanation */
+            _functionHash = (int(previous) << 1) ^ (int(next) << 2);
+            #endif
             return emit(&StateMachine::stepped<previous, next>);
         }
 
@@ -171,6 +174,9 @@ template<std::size_t states, std::size_t inputs, class State, class Input> class
          * @see @ref step()
          */
         template<State state> Signal entered(State previous) {
+            #ifdef _MSC_VER /* See _functionHash for explanation */
+            _functionHash = (int(state) << 1) ^ int(previous);
+            #endif
             return emit<StateMachine<states, inputs, State, Input>, State>(
                 static_cast<Signal(StateMachine<states, inputs, State, Input>::*)(State)>(&StateMachine::entered<state>), previous);
         }
@@ -184,6 +190,9 @@ template<std::size_t states, std::size_t inputs, class State, class Input> class
          * @see @ref step()
          */
         template<State state> Signal exited(State next) {
+            #ifdef _MSC_VER /* See _functionHash for explanation */
+            _functionHash = int(state) ^ (int(next) << 1);
+            #endif
             return emit<StateMachine<states, inputs, State, Input>, State>(
                 static_cast<Signal(StateMachine<states, inputs, State, Input>::*)(State)>(&StateMachine::exited<state>), next);
         }
@@ -241,6 +250,17 @@ template<std::size_t states, std::size_t inputs, class State, class Input> class
 
         State _transitions[states*inputs];
         State _current;
+
+   private:
+        #ifdef _MSC_VER
+        /* MSVC has an optimization (/OPT:ICF) that merges functions with
+           identical instructions. That would prevent template signals from
+           working, thus we need to do some otherwise useless work to
+           differentiate them. Ugly as hell but better than disabling the
+           optimization globally. Details:
+           http://blogs.msdn.com/b/oldnewthing/archive/2005/03/22/400373.aspx */
+        int _functionHash;
+        #endif
 };
 
 /* GCC 4.5 cannot handle {} here */

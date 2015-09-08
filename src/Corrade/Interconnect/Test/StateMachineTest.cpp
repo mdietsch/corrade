@@ -33,27 +33,49 @@ namespace Corrade { namespace Interconnect { namespace Test {
 struct StateMachineTest: TestSuite::Tester {
     explicit StateMachineTest();
 
+    void signalData();
     void test();
 };
 
 StateMachineTest::StateMachineTest() {
-    addTests<StateMachineTest>({&StateMachineTest::test});
+    addTests<StateMachineTest>({&StateMachineTest::signalData,
+              &StateMachineTest::test});
 }
 
-#ifndef CORRADE_GCC44_COMPATIBILITY
-void StateMachineTest::test() {
-#endif
-    enum class State: std::uint8_t {
-        Start,
-        End
-    };
+enum class State: std::uint8_t {
+    Start,
+    End
+};
 
-    enum class Input: std::uint8_t {
-        KeyA,
-        KeyB
-    };
+enum class Input: std::uint8_t {
+    KeyA,
+    KeyB
+};
 
-    typedef Interconnect::StateMachine<2, 2, State, Input> StateMachine;
+typedef Interconnect::StateMachine<2, 2, State, Input> StateMachine;
+
+void StateMachineTest::signalData() {
+    #ifndef CORRADE_MSVC2015_COMPATIBILITY
+    Implementation::SignalData data1{&StateMachine::entered<State::Start>};
+    Implementation::SignalData data2{&StateMachine::entered<State::End>};
+    Implementation::SignalData data3{&StateMachine::exited<State::Start>};
+
+    Implementation::SignalData data4{&StateMachine::stepped<State::Start, State::End>};
+    Implementation::SignalData data5{&StateMachine::stepped<State::Start, State::End>};
+    #else
+    auto data1 = Implementation::SignalData::create<StateMachine>(&StateMachine::entered<State::Start>);
+    auto data2 = Implementation::SignalData::create<StateMachine>(&StateMachine::entered<State::End>);
+    auto data3 = Implementation::SignalData::create<StateMachine>(&StateMachine::exited<State::Start>);
+
+    auto data4 = Implementation::SignalData::create<StateMachine>(&StateMachine::stepped<State::Start, State::End>);
+    auto data5 = Implementation::SignalData::create<StateMachine>(&StateMachine::stepped<State::End, State::Start>);
+    #endif
+
+    CORRADE_VERIFY(data1 != data2);
+    CORRADE_VERIFY(data1 != data3);
+
+    CORRADE_VERIFY(data4 != data5);
+}
 
 #ifdef CORRADE_GCC44_COMPATIBILITY
 namespace {
@@ -64,9 +86,9 @@ namespace {
     void endToStart() { Utility::Debug() << "going from end to start"; }
     void startToEnd() { Utility::Debug() << "going from start to end"; }
 }
+#endif
 
 void StateMachineTest::test() {
-#endif
     StateMachine m;
     m.addTransitions({
         {State::Start,  Input::KeyA,    State::End},
