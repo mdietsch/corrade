@@ -104,13 +104,9 @@ void UnicodeTest::nextUtf8Empty() {
 }
 
 void UnicodeTest::utf8utf32() {
-    #if !defined(__MINGW32__) && !defined(CORRADE_MSVC2013_COMPATIBILITY)
+    #ifndef CORRADE_MSVC2013_COMPATIBILITY
     CORRADE_COMPARE(Unicode::utf32("žluťoučký kůň"),
                     U"\u017Elu\u0165ou\u010Dk\u00FD k\u016F\u0148");
-    #elif defined(__MINGW32__)
-    CORRADE_COMPARE(Unicode::utf32("žluťoučký kůň"), (std::vector<char32_t>{
-        U'\u017E', U'l', U'u', U'\u0165', U'o', U'u', U'\u010D', U'k',
-        U'\u00FD', U' ', U'k', U'\u016F', U'\u0148'}));
     #else
     CORRADE_COMPARE(Unicode::utf32("žluťoučký kůň"), (std::u32string{
         0x017E, 'l', 'u', 0x0165, 'o', 'u', 0x010D, 'k',
@@ -118,10 +114,8 @@ void UnicodeTest::utf8utf32() {
     #endif
 
     /* Empty string shouldn't crash */
-    #if !defined(__MINGW32__) && !defined(CORRADE_MSVC2013_COMPATIBILITY)
+    #ifndef CORRADE_MSVC2013_COMPATIBILITY
     CORRADE_COMPARE(Unicode::utf32(""), U"");
-    #elif defined(__MINGW32__)
-    CORRADE_COMPARE(Unicode::utf32(""), std::vector<char32_t>());
     #else
     CORRADE_COMPARE(Unicode::utf32(""), std::u32string());
     #endif
