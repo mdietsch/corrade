@@ -25,9 +25,6 @@
 
 #include "Arguments.h"
 
-#ifdef CORRADE_MSVC2013_COMPATIBILITY
-#include <algorithm> /* std::max() */
-#endif
 #include <cstdlib>
 #include <cstring>
 #ifdef _MSC_VER

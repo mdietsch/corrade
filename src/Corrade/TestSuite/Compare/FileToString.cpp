@@ -25,9 +25,6 @@
 
 #include "FileToString.h"
 
-#ifdef CORRADE_MSVC2013_COMPATIBILITY
-#include <algorithm> /* std::max() */
-#endif
 #include <cstddef>
 #ifdef _MSC_VER
 #include <algorithm> /* std::max() */
