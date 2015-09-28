@@ -3,10 +3,10 @@
 branches:
   only:
   - master
+  - compatibility
 
 os:
 - linux
-- osx
 
 addons:
   apt:
@@ -14,11 +14,9 @@ addons:
     - ubuntu-toolchain-r-test
     - kalakris-cmake
     packages:
-    - g++-4.7
     - cmake
 
 install:
-- if [ "$TRAVIS_OS_NAME" == "linux" ]; then export CXX=g++-4.7; fi
 # so the directory tests pass (and then some workaround for crazy filesystem issues)
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then mkdir -p ~/.config/autostart; fi
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then mkdir -p ~/.local; fi
