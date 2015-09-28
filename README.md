@@ -5,8 +5,8 @@ Corrade is multiplatform utility library written in C++11/C++14.
 SUPPORTED PLATFORMS
 ===================
 
-*   **Linux** and embedded Linux
-*   **Windows** [![Build status](https://ci.appveyor.com/api/projects/status/afjjlsgtk6jjxulp/branch/compatibility?svg=true)](https://ci.appveyor.com/project/mosra/corrade/branch/compatibility)
+*   **Linux** and embedded Linux [![Build Status](https://travis-ci.org/mosra/corrade.svg?branch=compatibility)](https://travis-ci.org/mosra/corrade)
+*   **Windows** desktop and RT (Store/Phone) [![Build status](https://ci.appveyor.com/api/projects/status/afjjlsgtk6jjxulp/branch/compatibility?svg=true)](https://ci.appveyor.com/project/mosra/corrade/branch/compatibility)
 *   **OS X**
 *   **Android** 1.5 (API Level 3) and higher
 *   **Google Chrome** (through [Native Client](https://developers.google.com/native-client/),

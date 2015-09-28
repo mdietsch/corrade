@@ -218,10 +218,15 @@ void DirectoryTest::home() {
     const std::string home = Directory::home();
     Debug() << "Home dir found as:" << home;
 
-    /* On Linux verify that the home dir contains `.local` directory. Ugly and
-       hacky, but it's the best I came up with. Can't test for e.g. `/home/`
-       substring, as that can be overriden. */
-    #ifdef __linux__
+    /* On OSX verify that the home dir contains `Desktop` directory. Hopefully
+       that's true on all language mutations. */
+    #ifdef CORRADE_TARGET_APPLE
+    CORRADE_VERIFY(Directory::fileExists(Directory::join(home, "Desktop")));
+
+    /* On other Unixes verify that the home dir contains `.local` directory.
+       Ugly and hacky, but it's the best I came up with. Can't test for e.g.
+       `/home/` substring, as that can be overriden. */
+    #elif defined(CORRADE_TARGET_UNIX)
     CORRADE_VERIFY(Directory::fileExists(Directory::join(home, ".local")));
 
     /* On Windows verify that the home dir contains `desktop.ini` file. Ugly
@@ -233,7 +238,7 @@ void DirectoryTest::home() {
     /* No idea elsewhere */
     #else
     CORRADE_EXPECT_FAIL("Not implemented yet.");
-    CORRADE_COMPARE(home, "");
+    CORRADE_COMPARE(home, "(not implemented)");
     #endif
 }
 
@@ -258,7 +263,7 @@ void DirectoryTest::configurationDir() {
     /* No idea elsewhere */
     #else
     CORRADE_EXPECT_FAIL("Not implemented yet.");
-    CORRADE_COMPARE(dir, "");
+    CORRADE_COMPARE(dir, "(not implemented)");
     #endif
 }
 
@@ -268,10 +273,16 @@ void DirectoryTest::list() {
         (std::vector<std::string>{".", "..", "dir", "file"}),
         TestSuite::Compare::SortedContainer);
 
-    /* Skip special */
-    CORRADE_COMPARE_AS(Directory::list(DIRECTORY_TEST_DIR, Directory::Flag::SkipSpecial),
-        (std::vector<std::string>{".", "..", "dir", "file"}),
-        TestSuite::Compare::SortedContainer);
+    {
+        #ifdef TRAVIS_CI_HAS_CRAZY_FILESYSTEM_ON_LINUX
+        CORRADE_EXPECT_FAIL("Travis CI has crazy filesystem on Linux.");
+        #endif
+
+        /* Skip special */
+        CORRADE_COMPARE_AS(Directory::list(DIRECTORY_TEST_DIR, Directory::Flag::SkipSpecial),
+            (std::vector<std::string>{".", "..", "dir", "file"}),
+            TestSuite::Compare::SortedContainer);
+    }
 
     /* All, sorted ascending */
     CORRADE_COMPARE_AS(Directory::list(DIRECTORY_TEST_DIR, Directory::Flag::SortAscending),
@@ -288,16 +299,21 @@ void DirectoryTest::list() {
         (std::vector<std::string>{"dir", "file"}),
         TestSuite::Compare::SortedContainer);
 
-    /* Skip directories */
-    CORRADE_COMPARE_AS(Directory::list(DIRECTORY_TEST_DIR, Directory::Flag::SkipDirectories),
-        std::vector<std::string>{"file"},
-        TestSuite::Compare::SortedContainer);
+    {
+        #ifdef TRAVIS_CI_HAS_CRAZY_FILESYSTEM_ON_LINUX
+        CORRADE_EXPECT_FAIL("Travis CI has crazy filesystem on Linux.");
+        #endif
 
-    /* Skip files */
-    CORRADE_COMPARE_AS(Directory::list(DIRECTORY_TEST_DIR, Directory::Flag::SkipFiles),
-        (std::vector<std::string>{".", "..", "dir"}),
-        TestSuite::Compare::SortedContainer);
+        /* Skip directories */
+        CORRADE_COMPARE_AS(Directory::list(DIRECTORY_TEST_DIR, Directory::Flag::SkipDirectories),
+            std::vector<std::string>{"file"},
+            TestSuite::Compare::SortedContainer);
 
+        /* Skip files */
+        CORRADE_COMPARE_AS(Directory::list(DIRECTORY_TEST_DIR, Directory::Flag::SkipFiles),
+            (std::vector<std::string>{".", "..", "dir"}),
+            TestSuite::Compare::SortedContainer);
+    }
 }
 
 void DirectoryTest::listSortPrecedence() {

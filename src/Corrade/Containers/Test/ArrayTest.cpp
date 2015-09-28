@@ -54,6 +54,9 @@ struct ArrayTest: TestSuite::Tester {
 
     void slice();
     void release();
+
+    void customDeleter();
+    void customDeleterType();
 };
 
 typedef Containers::Array<int> Array;
@@ -81,7 +84,10 @@ ArrayTest::ArrayTest() {
               &ArrayTest::rangeBasedFor,
 
               &ArrayTest::slice,
-              &ArrayTest::release});
+              &ArrayTest::release,
+
+              &ArrayTest::customDeleter,
+              &ArrayTest::customDeleterType});
 }
 
 void ArrayTest::constructEmpty() {
@@ -353,6 +359,45 @@ void ArrayTest::release() {
     CORRADE_VERIFY(a.begin() == 0);
     #endif
     CORRADE_COMPARE(a.size(), 0);
+}
+
+namespace {
+    int CustomDeleterDeletedCount = 0;
+}
+
+void ArrayTest::customDeleter() {
+    int data[25]{};
+
+    {
+        Array a{data, 25, [](int*, std::size_t size) { CustomDeleterDeletedCount = size; }};
+        CORRADE_VERIFY(a == data);
+        CORRADE_COMPARE(a.size(), 25);
+        CORRADE_COMPARE(CustomDeleterDeletedCount, 0);
+    }
+
+    CORRADE_COMPARE(CustomDeleterDeletedCount, 25);
+}
+
+namespace {
+    struct CustomDeleter {
+        CustomDeleter(int& deletedCountOutput): deletedCount{deletedCountOutput} {}
+        void operator()(int*, std::size_t size) { deletedCount = size; }
+        int& deletedCount;
+    };
+}
+
+void ArrayTest::customDeleterType() {
+    int data[25]{};
+    int deletedCount = 0;
+
+    {
+        Containers::Array<int, CustomDeleter> a{data, 25, CustomDeleter{deletedCount}};
+        CORRADE_VERIFY(a == data);
+        CORRADE_COMPARE(a.size(), 25);
+        CORRADE_COMPARE(deletedCount, 0);
+    }
+
+    CORRADE_COMPARE(deletedCount, 25);
 }
 
 }}}
