@@ -281,7 +281,7 @@ class Array {
             #ifndef CORRADE_GCC46_COMPATIBILITY
             Array{DefaultInit, size}
             #else
-            _data{size ? new T[size] : nullptr}, _size{size}
+            _data{size ? new T[size] : nullptr}, _size{size}, _deleter{defaultDeleter}
             #endif
             {}
 
@@ -533,7 +533,7 @@ template<class T, class D> template<class ...Args> Array<T, D>::Array(DirectInit
     #ifndef CORRADE_GCC46_COMPATIBILITY
     Array{NoInit, size}
     #else
-    _data{size ? reinterpret_cast<T*>(new char[size*sizeof(T)]) : nullptr}, _size{size}
+    _data{size ? reinterpret_cast<T*>(new char[size*sizeof(T)]) : nullptr}, _size{size}, _deleter{Implementation::noInitDeleter}
     #endif
 {
     for(std::size_t i = 0; i != size; ++i)
