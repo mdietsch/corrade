@@ -38,7 +38,8 @@
 
 namespace Corrade { namespace TestSuite {
 
-Comparator<Compare::File>::Comparator(const std::string& pathPrefix): _actualState{State::ReadError}, _expectedState{State::ReadError}, _pathPrefix{pathPrefix} {}
+/* MSVC 2013 can't handle {} here */
+Comparator<Compare::File>::Comparator(const std::string& pathPrefix): _actualState{State::ReadError}, _expectedState{State::ReadError}, _pathPrefix(pathPrefix) {}
 
 bool Comparator<Compare::File>::operator()(const std::string& actualFilename, const std::string& expectedFilename) {
     _actualFilename = Utility::Directory::join(_pathPrefix, actualFilename);
