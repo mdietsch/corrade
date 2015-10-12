@@ -268,7 +268,7 @@ class CORRADE_UTILITY_EXPORT Debug {
             NoSpaceBeforeNextValue = 1 << 1,
             NoNewlineAtTheEnd = 1 << 2
         };
-        typedef Containers::EnumSet<Flag> Flags;
+        typedef Containers::EnumSet<Flag, unsigned char> Flags;
 
         CORRADE_ENUMSET_FRIEND_OPERATORS(Flags)
 
