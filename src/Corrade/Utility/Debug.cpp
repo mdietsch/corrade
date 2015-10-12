@@ -71,9 +71,9 @@ void Error::setOutput(std::ostream* output) {
     _globalErrorOutput = output;
 }
 
-Debug::Debug(): Debug{_globalOutput} {}
-Warning::Warning(): Warning{_globalWarningOutput} {}
-Error::Error(): Error{_globalErrorOutput} {}
+Debug::Debug(): _output{_globalOutput}, _flags{Flag::NoSpaceBeforeNextValue} {}
+Warning::Warning(): Debug{_globalWarningOutput} {}
+Error::Error(): Debug{_globalErrorOutput} {}
 
 Debug::Debug(const Debug& other): _output(other._output), _flags(other._flags) {
     /* If the other already wrote something on the output, disables newline at
