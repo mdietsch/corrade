@@ -43,91 +43,93 @@ template<> inline void toStream<Implementation::DebugOstreamFallback>(std::ostre
 
 }
 
-std::ostream* Debug::globalOutput = &std::cout;
-std::ostream* Warning::globalWarningOutput = &std::cerr;
-std::ostream* Error::globalErrorOutput = &std::cerr;
+std::ostream* Debug::_globalOutput = &std::cout;
+std::ostream* Warning::_globalWarningOutput = &std::cerr;
+std::ostream* Error::_globalErrorOutput = &std::cerr;
+
+Debug Debug::noNewlineAtTheEnd() {
+    return noNewlineAtTheEnd(_globalOutput);
+}
+
+Warning Warning::noNewlineAtTheEnd() {
+    return noNewlineAtTheEnd(_globalWarningOutput);
+}
+
+Error Error::noNewlineAtTheEnd() {
+    return noNewlineAtTheEnd(_globalErrorOutput);
+}
 
 void Debug::setOutput(std::ostream* output) {
-    globalOutput = output;
+    _globalOutput = output;
 }
 
 void Warning::setOutput(std::ostream* output) {
-    globalWarningOutput = output;
+    _globalWarningOutput = output;
 }
 
 void Error::setOutput(std::ostream* output) {
-    globalErrorOutput = output;
+    _globalErrorOutput = output;
 }
 
-Debug::Debug(): output(globalOutput), flags(0x01 | SpaceAfterEachValue | NewLineAtTheEnd) {}
+Debug::Debug(): Debug{_globalOutput} {}
+Warning::Warning(): Warning{_globalWarningOutput} {}
+Error::Error(): Error{_globalErrorOutput} {}
 
-Warning::Warning(): Debug(globalWarningOutput) {}
-
-Error::Error(): Debug(globalErrorOutput) {}
-
-Debug::Debug(const Debug& other): output(other.output), flags(other.flags) {
-    if(!(other.flags & 0x01))
-        setFlag(NewLineAtTheEnd, false);
-}
-
-Debug::Debug(Debug& other): output(other.output), flags(other.flags) {
-    other.flags &= ~0x01;
-
-    setFlag(NewLineAtTheEnd, false);
+Debug::Debug(const Debug& other): _output(other._output), _flags(other._flags) {
+    /* If the other already wrote something on the output, disables newline at
+       the end */
+    if(other._flags & Flag::ValueWritten) _flags |= Flag::NoNewlineAtTheEnd;
 }
 
 Debug::~Debug() {
-    if(output && !(flags & 0x01) && (flags & NewLineAtTheEnd))
-        *output << std::endl;
+    if(_output && (_flags & Flag::ValueWritten) && !(_flags & Flag::NoNewlineAtTheEnd))
+        *_output << std::endl;
 }
 
-void Debug::setFlag(Flag flag, bool value) {
-    flag = static_cast<Flag>(flag & ~0x01);
-    if(value) flags |= flag;
-    else flags &= ~flag;
-}
-
-template<class T> Debug Debug::print(const T& value) {
-    if(!output) return *this;
+template<class T> Debug& Debug::print(const T& value) {
+    if(!_output) return *this;
 
     /* Separate values with spaces, if enabled */
-    if(flags & 0x01) flags &= ~0x01;
-    else if(flags & Debug::SpaceAfterEachValue) *output << " ";
+    if(_flags & Flag::NoSpaceBeforeNextValue)
+        _flags &= ~Flag::NoSpaceBeforeNextValue;
+    else *_output << ' ';
 
-    toStream(*output, value);
+    toStream(*_output, value);
+
+    _flags |= Flag::ValueWritten;
     return *this;
 }
 
-Debug Debug::operator<<(const std::string& value) { return print(value); }
-Debug Debug::operator<<(const void* value) { return print(value); }
-Debug Debug::operator<<(const char* value) { return print(value); }
-Debug Debug::operator<<(bool value) { return print(value ? "true" : "false"); }
-Debug Debug::operator<<(int value) { return print(value); }
-Debug Debug::operator<<(long value) { return print(value); }
-Debug Debug::operator<<(long long value) { return print(value); }
-Debug Debug::operator<<(unsigned value) { return print(value); }
-Debug Debug::operator<<(unsigned long value) { return print(value); }
-Debug Debug::operator<<(unsigned long long value) { return print(value); }
-Debug Debug::operator<<(float value) { return print(value); }
-Debug Debug::operator<<(double value) { return print(value); }
+Debug& Debug::operator<<(const std::string& value) { return print(value); }
+Debug& Debug::operator<<(const void* value) { return print(value); }
+Debug& Debug::operator<<(const char* value) { return print(value); }
+Debug& Debug::operator<<(bool value) { return print(value ? "true" : "false"); }
+Debug& Debug::operator<<(int value) { return print(value); }
+Debug& Debug::operator<<(long value) { return print(value); }
+Debug& Debug::operator<<(long long value) { return print(value); }
+Debug& Debug::operator<<(unsigned value) { return print(value); }
+Debug& Debug::operator<<(unsigned long value) { return print(value); }
+Debug& Debug::operator<<(unsigned long long value) { return print(value); }
+Debug& Debug::operator<<(float value) { return print(value); }
+Debug& Debug::operator<<(double value) { return print(value); }
 #ifndef CORRADE_TARGET_EMSCRIPTEN
-Debug Debug::operator<<(long double value) { return print(value); }
+Debug& Debug::operator<<(long double value) { return print(value); }
 #endif
 
 #ifndef CORRADE_MSVC2013_COMPATIBILITY
-Debug Debug::operator<<(char32_t value) {
+Debug& Debug::operator<<(char32_t value) {
     std::ostringstream o;
     o << "U+" << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << value;
     return print(o.str());
 }
 #endif
 
-Debug Debug::operator<<(const char32_t* value) {
+Debug& Debug::operator<<(const char32_t* value) {
     return *this << std::u32string(value);
 }
 
 #ifndef DOXYGEN_GENERATING_OUTPUT
-Debug Debug::operator<<(Implementation::DebugOstreamFallback&& value) {
+Debug& Debug::operator<<(Implementation::DebugOstreamFallback&& value) {
     return print(value);
 }
 #endif

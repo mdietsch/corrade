@@ -281,7 +281,7 @@ namespace {
     NonCopyable::NonCopyable() = default;
 
     inline bool operator==(const NonCopyable&, const NonCopyable&) { return true; }
-    inline Utility::Debug operator<<(Utility::Debug debug, const NonCopyable&) {
+    inline Utility::Debug& operator<<(Utility::Debug& debug, const NonCopyable&) {
         return debug << "NonCopyable";
     }
 }

@@ -16,6 +16,14 @@ addons:
     packages:
     - cmake
 
+notifications:
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/00ec7a9066bb0fec98f3
+    on_success: change
+    on_failure: always
+    on_start: never
+
 install:
 # so the directory tests pass (and then some workaround for crazy filesystem issues)
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then mkdir -p ~/.config/autostart; fi

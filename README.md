@@ -2,11 +2,13 @@
 
 Corrade is multiplatform utility library written in C++11/C++14.
 
+[![Join the chat at https://gitter.im/mosra/magnum](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/mosra/magnum?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 SUPPORTED PLATFORMS
 ===================
 
 *   **Linux** and embedded Linux [![Build Status](https://travis-ci.org/mosra/corrade.svg?branch=compatibility)](https://travis-ci.org/mosra/corrade)
-*   **Windows** desktop and RT (Store/Phone) [![Build status](https://ci.appveyor.com/api/projects/status/afjjlsgtk6jjxulp/branch/compatibility?svg=true)](https://ci.appveyor.com/project/mosra/corrade/branch/compatibility)
+*   **Windows** desktop and RT (Store/Phone) [![Build Status](https://ci.appveyor.com/api/projects/status/afjjlsgtk6jjxulp/branch/compatibility?svg=true)](https://ci.appveyor.com/project/mosra/corrade/branch/compatibility)
 *   **OS X**
 *   **Android** 1.5 (API Level 3) and higher
 *   **Google Chrome** (through [Native Client](https://developers.google.com/native-client/),
@@ -99,6 +101,9 @@ awesome idea? Feel free to visit my website or contact me at:
 
 *   Website -- http://mosra.cz/blog/corrade.php
 *   GitHub -- http://github.com/mosra/corrade
+*   Gitter -- https://gitter.im/mosra/magnum
+*   IRC -- join `#magnum-engine` channel on freenode
+*   Google Groups -- https://groups.google.com/forum/#!forum/magnum-engine
 *   Twitter -- https://twitter.com/czmosra
 *   E-mail -- mosra@centrum.cz
 *   Jabber -- mosra@jabbim.cz
