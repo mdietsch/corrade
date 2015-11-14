@@ -67,27 +67,27 @@ CORRADE_HAS_TYPE(HasSin, decltype(std::sin(*static_cast<const T*>(nullptr))));
 
 void TypeTraitsTest::hasType() {
     /* Member type */
-    CORRADE_VERIFY((HasKeyType<std::map<int, int>>::Value));
-    CORRADE_VERIFY(!HasKeyType<std::vector<int>>::Value);
+    CORRADE_VERIFY((HasKeyType<std::map<int, int>>::value));
+    CORRADE_VERIFY(!HasKeyType<std::vector<int>>::value);
 
     /* Member function */
-    CORRADE_VERIFY(HasSize<std::vector<int>>::Value);
-    CORRADE_VERIFY(!(HasSize<std::tuple<int, int>>::Value));
+    CORRADE_VERIFY(HasSize<std::vector<int>>::value);
+    CORRADE_VERIFY(!(HasSize<std::tuple<int, int>>::value));
 
     /* Non-member function */
     #ifndef CORRADE_GCC45_COMPATIBILITY
-    CORRADE_VERIFY(HasBegin<std::string>::Value);
-    CORRADE_VERIFY(!HasBegin<int*>::Value);
+    CORRADE_VERIFY(HasBegin<std::string>::value);
+    CORRADE_VERIFY(!HasBegin<int*>::value);
     #else
-    CORRADE_VERIFY(HasSin<float>::Value);
-    CORRADE_VERIFY(!HasSin<std::string>::Value);
+    CORRADE_VERIFY(HasSin<float>::value);
+    CORRADE_VERIFY(!HasSin<std::string>::value);
     #endif
 }
 
 namespace {
     struct Type {};
-    int* begin(Type);
-    int* end(Type);
+    int* begin(Type) { return nullptr; }
+    int* end(Type) { return nullptr; }
     struct LinkedListItem: Containers::LinkedListItem<LinkedListItem> {};
 }
 

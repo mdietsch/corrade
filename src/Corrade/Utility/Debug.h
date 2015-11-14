@@ -36,6 +36,7 @@
 
 #include "Corrade/Containers/EnumSet.h"
 #include "Corrade/Utility/TypeTraits.h"
+#include "Corrade/Utility/Utility.h"
 #include "Corrade/Utility/visibility.h"
 
 namespace Corrade { namespace Utility {
@@ -95,7 +96,7 @@ Debug() << "Value:" << Debug::newline << 16;
 Debug::noNewlineAtTheEnd() << "Hello!";
 @endcode
 
-@see @ref Warning, @ref Error, @ref CORRADE_ASSERT(),
+@see @ref Warning, @ref Error, @ref Fatal, @ref CORRADE_ASSERT(),
     @ref CORRADE_INTERNAL_ASSERT(), @ref CORRADE_INTERNAL_ASSERT_OUTPUT(),
     @ref NaClConsoleStreamBuffer
 @todo Output to more ostreams at once
@@ -108,7 +109,7 @@ class CORRADE_UTILITY_EXPORT Debug {
         /**
          * @brief Debug output without newline at the end
          *
-         * Unline @ref Debug() doesn't put newline at the end on destruction.
+         * Unlike @ref Debug() doesn't put newline at the end on destruction.
          * @see @ref noNewlineAtTheEnd(std::ostream*)
          */
         static Debug noNewlineAtTheEnd();
@@ -116,11 +117,12 @@ class CORRADE_UTILITY_EXPORT Debug {
         /**
          * @brief Debug output without newline at the end
          *
-         * Unline @ref Debug(std::ostream*) doesn't put newline at the end on
+         * Unlike @ref Debug(std::ostream*) doesn't put newline at the end on
          * destruction.
          * @see @ref noNewlineAtTheEnd()
          */
-        static Debug noNewlineAtTheEnd(std::ostream* output);
+        /* MinGW complains loudly if the declaration doesn't also have inline */
+        inline static Debug noNewlineAtTheEnd(std::ostream* output);
 
         /**
          * @brief Don't put space before next value
@@ -133,7 +135,8 @@ class CORRADE_UTILITY_EXPORT Debug {
          * @endcode
          * @see @ref newline()
          */
-        static void nospace(Debug& debug);
+        /* MinGW complains loudly if the declaration doesn't also have inline */
+        inline static void nospace(Debug& debug);
 
         /**
          * @brief Output a newline
@@ -171,7 +174,8 @@ class CORRADE_UTILITY_EXPORT Debug {
          * Constructs debug object with given output.
          * @see @ref noNewlineAtTheEnd(std::ostream*), @ref setOutput()
          */
-        explicit Debug(std::ostream* output);
+        /* MinGW complains loudly if the declaration doesn't also have inline */
+        inline explicit Debug(std::ostream* output);
 
         /**
          * @brief Copy constructor
@@ -395,7 +399,7 @@ class CORRADE_UTILITY_EXPORT Warning: public Debug {
         /**
          * @brief Warning output without newline at the end
          *
-         * Unline @ref Warning() doesn't put newline at the end on destruction.
+         * Unlike @ref Warning() doesn't put newline at the end on destruction.
          * @see @ref noNewlineAtTheEnd(std::ostream*)
          */
         static Warning noNewlineAtTheEnd();
@@ -403,11 +407,12 @@ class CORRADE_UTILITY_EXPORT Warning: public Debug {
         /**
          * @brief Warning output without newline at the end
          *
-         * Unline @ref Warning(std::ostream*) doesn't put newline at the end on
+         * Unlike @ref Warning(std::ostream*) doesn't put newline at the end on
          * destruction.
          * @see @ref noNewlineAtTheEnd()
          */
-        static Warning noNewlineAtTheEnd(std::ostream* output);
+        /* MinGW complains loudly if the declaration doesn't also have inline */
+        inline static Warning noNewlineAtTheEnd(std::ostream* output);
 
         /** @copydoc Debug::setOutput() */
         static void setOutput(std::ostream* output);
@@ -437,13 +442,16 @@ inline Warning Warning::noNewlineAtTheEnd(std::ostream* const output) {
 @brief Error output handler
 
 @copydetails Warning
+@see @ref Fatal
 */
 class CORRADE_UTILITY_EXPORT Error: public Debug {
+    friend Fatal;
+
     public:
         /**
          * @brief Error output without newline at the end
          *
-         * Unline @ref Error() doesn't put newline at the end on destruction.
+         * Unlike @ref Error() doesn't put newline at the end on destruction.
          * @see @ref noNewlineAtTheEnd(std::ostream*)
          */
         static Error noNewlineAtTheEnd();
@@ -451,11 +459,12 @@ class CORRADE_UTILITY_EXPORT Error: public Debug {
         /**
          * @brief Error output without newline at the end
          *
-         * Unline @ref Error(std::ostream*) doesn't put newline at the end on
+         * Unlike @ref Error(std::ostream*) doesn't put newline at the end on
          * destruction.
          * @see @ref noNewlineAtTheEnd()
          */
-        static Error noNewlineAtTheEnd(std::ostream* output);
+        /* MinGW complains loudly if the declaration doesn't also have inline */
+        inline static Error noNewlineAtTheEnd(std::ostream* output);
 
         /** @copydoc Debug::setOutput() */
         static void setOutput(std::ostream* output);
@@ -480,6 +489,61 @@ inline Error Error::noNewlineAtTheEnd(std::ostream* const output) {
     error._flags |= Flag::NoNewlineAtTheEnd;
     return error;
 }
+
+/**
+@brief Warning output handler
+
+Equivalent to @ref Error, but exits with defined exit code on destruction. So
+instead of this:
+@code
+if(stuff.broken()) {
+    Error() << "Everything's broken, exiting.";
+    std::exit(42);
+}
+@endcode
+You can write just this:
+@code
+if(stuff.broken())
+    Fatal(42) << "Everything's broken, exiting.";
+@endcode
+
+As the message produced by this class is the last that the program writes,
+there is no need for ability to disable the newline at the end (it also made
+the implementation much simpler).
+*/
+class CORRADE_UTILITY_EXPORT Fatal: public Error {
+    public:
+        /**
+         * @brief Constructor
+         *
+         * Sets output to `std::cerr`. The @p exitcode is passed to `std::exit()`
+         * on destruction.
+         * @see @ref noNewlineAtTheEnd(), @ref setOutput()
+         */
+        Fatal(int exitCode = 1): _exitCode{exitCode} {}
+
+        /**
+         * @brief Constructor
+         * @param output        Stream where to put debug output. If set to
+         *      `nullptr`, no debug output will be written anywhere.
+         * @param exitCode      Application exit code to be used on destruction
+         *
+         * @see @ref setOutput()
+         */
+        Fatal(std::ostream* output, int exitCode = 1): Error{output}, _exitCode{exitCode} {}
+
+        /**
+         * @brief Destructor
+         *
+         * Exits the application with exit code specified in constructor.
+         */
+        ~Fatal();
+
+    private:
+        using Error::noNewlineAtTheEnd;
+
+        int _exitCode;
+};
 
 namespace Implementation {
 
