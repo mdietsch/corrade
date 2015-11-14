@@ -445,7 +445,8 @@ inline Warning Warning::noNewlineAtTheEnd(std::ostream* const output) {
 @see @ref Fatal
 */
 class CORRADE_UTILITY_EXPORT Error: public Debug {
-    friend Fatal;
+    /* GCC 4.6 needs the class keyword */
+    friend class Fatal;
 
     public:
         /**
