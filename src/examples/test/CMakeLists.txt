@@ -28,10 +28,9 @@ project(CorradeTestExample)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../../../modules")
 
-find_package(Corrade REQUIRED)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CORRADE_CXX_FLAGS}")
-include_directories(${CORRADE_INCLUDE_DIR})
+set(CORRADE_USE_PEDANTIC_CXX ON)
+find_package(Corrade REQUIRED TestSuite)
 
 enable_testing()
 corrade_add_test(MyTest MyTest.cpp)
+set_target_properties(MyTest PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)

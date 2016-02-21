@@ -23,8 +23,6 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 set(CorradeUtility_SRCS
     Debug.cpp
     Directory.cpp
@@ -82,6 +80,7 @@ endif()
 add_library(CorradeUtilityObjects OBJECT
     ${CorradeUtility_SRCS}
     ${CorradeUtility_HEADERS})
+target_include_directories(CorradeUtilityObjects PUBLIC $<TARGET_PROPERTY:CorradeUtility,INTERFACE_INCLUDE_DIRECTORIES>)
 if(NOT BUILD_STATIC)
     set_target_properties(CorradeUtilityObjects PROPERTIES COMPILE_FLAGS "-DCorradeUtilityObjects_EXPORTS")
 endif()
@@ -93,6 +92,12 @@ endif()
 add_library(CorradeUtility ${SHARED_OR_STATIC}
     $<TARGET_OBJECTS:CorradeUtilityObjects>
     ${CorradeUtility_GracefulAssert_SRCS})
+target_include_directories(CorradeUtility PUBLIC
+    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_BINARY_DIR}/src)
+set_target_properties(CorradeUtility PROPERTIES
+    CORRADE_USE_CXX11 ON
+    INTERFACE_CORRADE_USE_CXX11 ON)
 set_target_properties(CorradeUtility PROPERTIES DEBUG_POSTFIX "-d")
 if(NOT BUILD_STATIC)
     set_target_properties(CorradeUtility PROPERTIES VERSION ${CORRADE_LIBRARY_VERSION} SOVERSION ${CORRADE_LIBRARY_SOVERSION})
@@ -147,8 +152,8 @@ if(BUILD_TESTS)
     add_subdirectory(Test)
 endif()
 
-# Corrade Utility library and rc executable for superprojects
-set(CORRADE_UTILITY_LIBRARY CorradeUtility CACHE INTERNAL "")
+# Corrade::Utility and Corrade::rc target alias for superprojects
+add_library(Corrade::Utility ALIAS CorradeUtility)
 if(NOT CMAKE_CROSSCOMPILING)
-    set(CORRADE_RC_EXECUTABLE corrade-rc CACHE INTERNAL "")
+    add_executable(Corrade::rc ALIAS corrade-rc)
 endif()

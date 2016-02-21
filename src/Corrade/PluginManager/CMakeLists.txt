@@ -23,8 +23,6 @@
 #   DEALINGS IN THE SOFTWARE.
 #
 
-include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
-
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/configure.h.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/configure.h)
 
@@ -48,6 +46,7 @@ set(CorradePluginManager_HEADERS
 add_library(CorradePluginManagerObjects OBJECT
     ${CorradePluginManager_SRCS}
     ${CorradePluginManager_HEADERS})
+target_include_directories(CorradePluginManagerObjects PUBLIC $<TARGET_PROPERTY:CorradeUtility,INTERFACE_INCLUDE_DIRECTORIES>)
 if(NOT BUILD_STATIC)
     set_target_properties(CorradePluginManagerObjects PROPERTIES COMPILE_FLAGS "-DCorradePluginManagerObjects_EXPORTS")
 endif()
@@ -59,6 +58,7 @@ endif()
 add_library(CorradePluginManager ${SHARED_OR_STATIC}
     $<TARGET_OBJECTS:CorradePluginManagerObjects>
     ${CorradePluginManager_GracefulAssert_SRCS})
+target_include_directories(CorradePluginManager PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 set_target_properties(CorradePluginManager PROPERTIES DEBUG_POSTFIX "-d")
 if(NOT BUILD_STATIC)
     set_target_properties(CorradePluginManager PROPERTIES VERSION ${CORRADE_LIBRARY_VERSION} SOVERSION ${CORRADE_LIBRARY_SOVERSION})
@@ -82,6 +82,7 @@ if(BUILD_TESTS)
     add_library(CorradePluginManagerTestLib ${SHARED_OR_STATIC}
         $<TARGET_OBJECTS:CorradePluginManagerObjects>
         ${CorradePluginManager_GracefulAssert_SRCS})
+    target_include_directories(CorradePluginManagerTestLib PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
     set_target_properties(CorradePluginManagerTestLib PROPERTIES
         COMPILE_FLAGS "-DCORRADE_GRACEFUL_ASSERT"
         DEBUG_POSTFIX "-d")
@@ -106,5 +107,5 @@ if(BUILD_TESTS)
     add_subdirectory(Test)
 endif()
 
-# Corrade PluginManager library for superprojects
-set(CORRADE_PLUGINMANAGER_LIBRARY CorradePluginManager CACHE INTERNAL "")
+# Corrade::PluginManager target alias for superprojects
+add_library(Corrade::PluginManager ALIAS CorradePluginManager)

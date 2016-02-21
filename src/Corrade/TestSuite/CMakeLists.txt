@@ -62,5 +62,5 @@ if(BUILD_TESTS)
     add_subdirectory(Test)
 endif()
 
-# Corrade TestSuite library for superprojects
-set(CORRADE_TESTSUITE_LIBRARY CorradeTestSuite CACHE INTERNAL "")
+# Corrade::TestSuite target alias for superprojects
+add_library(Corrade::TestSuite ALIAS CorradeTestSuite)
