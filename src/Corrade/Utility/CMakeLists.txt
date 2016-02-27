@@ -82,7 +82,7 @@ add_library(CorradeUtilityObjects OBJECT
     ${CorradeUtility_HEADERS})
 target_include_directories(CorradeUtilityObjects PUBLIC $<TARGET_PROPERTY:CorradeUtility,INTERFACE_INCLUDE_DIRECTORIES>)
 if(NOT BUILD_STATIC)
-    set_target_properties(CorradeUtilityObjects PROPERTIES COMPILE_FLAGS "-DCorradeUtilityObjects_EXPORTS")
+    target_compile_definitions(CorradeUtilityObjects PRIVATE "-DCorradeUtilityObjects_EXPORTS")
 endif()
 if(NOT BUILD_STATIC OR BUILD_STATIC_PIC)
     set_target_properties(CorradeUtilityObjects PROPERTIES POSITION_INDEPENDENT_CODE ON)
@@ -131,9 +131,8 @@ endif()
 if(BUILD_TESTS)
     # Library with graceful assert for testing
     add_library(CorradeUtilityTestLib ${SHARED_OR_STATIC} ${CorradeUtility_GracefulAssert_SRCS})
-    set_target_properties(CorradeUtilityTestLib PROPERTIES
-        COMPILE_FLAGS "-DCORRADE_GRACEFUL_ASSERT"
-        DEBUG_POSTFIX "-d")
+    target_compile_definitions(CorradeUtilityTestLib PRIVATE "CORRADE_GRACEFUL_ASSERT")
+    set_target_properties(CorradeUtilityTestLib PROPERTIES DEBUG_POSTFIX "-d")
     if(BUILD_STATIC_PIC)
         set_target_properties(CorradeUtilityTestLib PROPERTIES POSITION_INDEPENDENT_CODE ON)
     endif()

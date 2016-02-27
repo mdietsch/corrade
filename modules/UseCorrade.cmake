@@ -281,13 +281,13 @@ function(corrade_add_plugin plugin_name debug_install_dir release_install_dir me
         add_library(${plugin_name} MODULE ${ARGN})
     endif()
     target_compile_options(${plugin_name} PUBLIC $<TARGET_PROPERTY:Corrade::PluginManager,INTERFACE_COMPILE_OPTIONS>)
-    target_compile_definitions(${plugin_name} PUBLIC $<TARGET_PROPERTY:Corrade::PluginManager,INTERFACE_COMPILE_DEFINITIONS>)
+    target_compile_definitions(${plugin_name}
+        PUBLIC $<TARGET_PROPERTY:Corrade::PluginManager,INTERFACE_COMPILE_DEFINITIONS>
+        PRIVATE "CORRADE_DYNAMIC_PLUGIN")
     target_include_directories(${plugin_name} PUBLIC $<TARGET_PROPERTY:Corrade::PluginManager,INTERFACE_INCLUDE_DIRECTORIES>)
 
     # Plugins don't have any prefix (e.g. 'lib' on Linux)
-    set_target_properties(${plugin_name} PROPERTIES
-        PREFIX ""
-        COMPILE_FLAGS -DCORRADE_DYNAMIC_PLUGIN)
+    set_target_properties(${plugin_name} PROPERTIES PREFIX "")
 
     # Enable incremental linking on the Mac OS X
     if(CORRADE_TARGET_APPLE)
@@ -332,11 +332,12 @@ function(corrade_add_static_plugin plugin_name install_dir metadata_file)
     # Create static library and bring all needed options along
     add_library(${plugin_name} STATIC ${ARGN} ${${plugin_name}})
     target_compile_options(${plugin_name} PUBLIC $<TARGET_PROPERTY:Corrade::PluginManager,INTERFACE_COMPILE_OPTIONS>)
-    target_compile_definitions(${plugin_name} PUBLIC $<TARGET_PROPERTY:Corrade::PluginManager,INTERFACE_COMPILE_DEFINITIONS>)
+    target_compile_definitions(${plugin_name}
+        PUBLIC $<TARGET_PROPERTY:Corrade::PluginManager,INTERFACE_COMPILE_DEFINITIONS>
+        PRIVATE "CORRADE_STATIC_PLUGIN")
     target_include_directories(${plugin_name} PUBLIC $<TARGET_PROPERTY:Corrade::PluginManager,INTERFACE_INCLUDE_DIRECTORIES>)
-    set_target_properties(${plugin_name} PROPERTIES
-        COMPILE_FLAGS "-DCORRADE_STATIC_PLUGIN"
-        DEBUG_POSTFIX "-d")
+
+    set_target_properties(${plugin_name} PROPERTIES DEBUG_POSTFIX "-d")
 
     # Install, if not into the same place
     if(NOT ${install_dir} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})

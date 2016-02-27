@@ -48,7 +48,7 @@ add_library(CorradePluginManagerObjects OBJECT
     ${CorradePluginManager_HEADERS})
 target_include_directories(CorradePluginManagerObjects PUBLIC $<TARGET_PROPERTY:CorradeUtility,INTERFACE_INCLUDE_DIRECTORIES>)
 if(NOT BUILD_STATIC)
-    set_target_properties(CorradePluginManagerObjects PROPERTIES COMPILE_FLAGS "-DCorradePluginManagerObjects_EXPORTS")
+    target_compile_definitions(CorradePluginManagerObjects PRIVATE "CorradePluginManagerObjects_EXPORTS")
 endif()
 if(NOT BUILD_STATIC OR BUILD_STATIC_PIC)
     set_target_properties(CorradePluginManagerObjects PROPERTIES POSITION_INDEPENDENT_CODE ON)
@@ -83,9 +83,8 @@ if(BUILD_TESTS)
         $<TARGET_OBJECTS:CorradePluginManagerObjects>
         ${CorradePluginManager_GracefulAssert_SRCS})
     target_include_directories(CorradePluginManagerTestLib PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    set_target_properties(CorradePluginManagerTestLib PROPERTIES
-        COMPILE_FLAGS "-DCORRADE_GRACEFUL_ASSERT"
-        DEBUG_POSTFIX "-d")
+    target_compile_definitions(CorradePluginManagerTestLib PRIVATE "CORRADE_GRACEFUL_ASSERT")
+    set_target_properties(CorradePluginManagerTestLib PROPERTIES DEBUG_POSTFIX "-d")
     if(BUILD_STATIC_PIC)
         set_target_properties(CorradePluginManagerTestLib PROPERTIES POSITION_INDEPENDENT_CODE ON)
     endif()

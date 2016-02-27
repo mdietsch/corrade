@@ -47,7 +47,6 @@ if(NOT BUILD_STATIC)
 elseif(BUILD_STATIC_PIC)
     set_target_properties(CorradeTestSuite PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
-
 target_link_libraries(CorradeTestSuite CorradeUtility)
 
 install(TARGETS CorradeTestSuite
