@@ -3,6 +3,7 @@
 branches:
   only:
   - master
+  - cmake-ng
 
 os:
 - linux

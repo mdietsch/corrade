@@ -5,6 +5,7 @@ version: '{branch}-{build}'
 branches:
   only:
   - master
+  - cmake-ng
 skip_tags: true
 shallow_clone: true
 clone_depth: 1
