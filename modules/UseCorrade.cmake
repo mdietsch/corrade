@@ -281,10 +281,8 @@ function(corrade_add_plugin plugin_name debug_install_dir release_install_dir me
     else()
         add_library(${plugin_name} MODULE ${ARGN})
     endif()
-    target_compile_options(${plugin_name} PUBLIC $<TARGET_PROPERTY:Corrade::PluginManager,INTERFACE_COMPILE_OPTIONS>)
-    target_compile_definitions(${plugin_name}
-        PUBLIC $<TARGET_PROPERTY:Corrade::PluginManager,INTERFACE_COMPILE_DEFINITIONS>
-        PRIVATE "CORRADE_DYNAMIC_PLUGIN")
+    set_target_properties(${plugin_name} PROPERTIES CORRADE_CXX_STANDARD 11)
+    target_compile_definitions(${plugin_name} PRIVATE "CORRADE_DYNAMIC_PLUGIN")
     target_include_directories(${plugin_name} PUBLIC $<TARGET_PROPERTY:Corrade::PluginManager,INTERFACE_INCLUDE_DIRECTORIES>)
 
     # Plugins don't have any prefix (e.g. 'lib' on Linux)
@@ -332,10 +330,8 @@ function(corrade_add_static_plugin plugin_name install_dir metadata_file)
 
     # Create static library and bring all needed options along
     add_library(${plugin_name} STATIC ${ARGN} ${${plugin_name}})
-    target_compile_options(${plugin_name} PUBLIC $<TARGET_PROPERTY:Corrade::PluginManager,INTERFACE_COMPILE_OPTIONS>)
-    target_compile_definitions(${plugin_name}
-        PUBLIC $<TARGET_PROPERTY:Corrade::PluginManager,INTERFACE_COMPILE_DEFINITIONS>
-        PRIVATE "CORRADE_STATIC_PLUGIN")
+    set_target_properties(${plugin_name} PROPERTIES CORRADE_CXX_STANDARD 11)
+    target_compile_definitions(${plugin_name} PRIVATE "CORRADE_STATIC_PLUGIN")
     target_include_directories(${plugin_name} PUBLIC $<TARGET_PROPERTY:Corrade::PluginManager,INTERFACE_INCLUDE_DIRECTORIES>)
 
     set_target_properties(${plugin_name} PROPERTIES DEBUG_POSTFIX "-d")

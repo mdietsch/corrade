@@ -368,7 +368,7 @@ foreach(_component ${Corrade_FIND_COMPONENTS})
             # Require C++11 for users
             set_property(TARGET Corrade::${_component} PROPERTY
                 INTERFACE_CORRADE_CXX_STANDARD 11)
-            set_property(TARGET Corrade::Utility APPEND PROPERTY
+            set_property(TARGET Corrade::${_component} APPEND PROPERTY
                 COMPATIBLE_INTERFACE_NUMBER_MAX CORRADE_CXX_STANDARD)
 
             # AndroidLogStreamBuffer class needs to be linked to log library
