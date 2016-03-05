@@ -29,7 +29,7 @@ if(MSVC)
 endif()
 
 set_directory_properties(PROPERTIES
-    CORRADE_USE_CXX11 ON
+    CORRADE_CXX_STANDARD 11
     CORRADE_USE_PEDANTIC_FLAGS ON)
 
 add_subdirectory(Corrade)

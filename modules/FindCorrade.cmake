@@ -42,23 +42,23 @@
 #
 # Corrade defines the following custom target properties:
 #
-#  CORRADE_USE_CXX11            - Require C++11 or any later standard when
-#   compiling given target (boolean). Does nothing if :variable:`CMAKE_CXX_FLAGS`
-#   already contains particular standard setting flag or if given target
-#   contains :prop_tgt:`CMAKE_CXX_STANDARD` property.
-#  INTERFACE_CORRADE_USE_CXX11  - Require C++11 or any later standard when
-#   using given target (boolean). Does nothing if :variable:`CMAKE_CXX_FLAGS`
-#   already contains particular standard setting flag or if given target
-#   contains :prop_tgt:`CMAKE_CXX_STANDARD` property.
-#  CORRADE_USE_PEDANTIC_FLAGS   - Enable additional compiler/linker flags
-#   (boolean)
+#  CORRADE_CXX_STANDARD         - C++ standard to require when compiling given
+#   target. Does nothing if :variable:`CMAKE_CXX_FLAGS` already contains
+#   particular standard setting flag or if given target contains
+#   :prop_tgt:`CMAKE_CXX_STANDARD` property. Allowed value is 11.
+#  INTERFACE_CORRADE_CXX_STANDARD - C++ standard to require when using given
+#   target. Does nothing if :variable:`CMAKE_CXX_FLAGS` already contains
+#   particular standard setting flag or if given target contains
+#   :prop_tgt:`CMAKE_CXX_STANDARD` property. Allowed value is 11.
+#  CORRADE_USE_PEDANTIC_FLAGS   - Enable additional compiler/linker flags.
+#   Boolean.
 #
 # These properties are inherited from directory properties, meaning that if you
 # set them on directories, they get implicitly set on all targets in given
 # directory (with a possibility to do target-specific overrides). All Corrade
-# libraries have the :prop_tgt:`INTERFACE_CORRADE_USE_CXX11` property enabled,
-# meaning that you will always have at least C++11 enabled once you link to any
-# Corrade library.
+# libraries have the :prop_tgt:`INTERFACE_CORRADE_CXX_STANDARD` property set to
+# 11, meaning that you will always have at least C++11 enabled once you link to
+# any Corrade library.
 #
 # Features of found Corrade library are exposed in these variables:
 #
@@ -367,7 +367,9 @@ foreach(_component ${Corrade_FIND_COMPONENTS})
 
             # Require C++11 for users
             set_property(TARGET Corrade::${_component} PROPERTY
-                INTERFACE_CORRADE_USE_CXX11 ON)
+                INTERFACE_CORRADE_CXX_STANDARD 11)
+            set_property(TARGET Corrade::Utility APPEND PROPERTY
+                COMPATIBLE_INTERFACE_NUMBER_MAX CORRADE_CXX_STANDARD)
 
             # AndroidLogStreamBuffer class needs to be linked to log library
             if(CORRADE_TARGET_ANDROID)

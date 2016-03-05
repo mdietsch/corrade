@@ -95,9 +95,11 @@ add_library(CorradeUtility ${SHARED_OR_STATIC}
 target_include_directories(CorradeUtility PUBLIC
     ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_BINARY_DIR}/src)
+# Require (at least) C++11 for users
 set_target_properties(CorradeUtility PROPERTIES
-    CORRADE_USE_CXX11 ON
-    INTERFACE_CORRADE_USE_CXX11 ON)
+    INTERFACE_CORRADE_CXX_STANDARD 11)
+set_property(TARGET CorradeUtility APPEND PROPERTY
+    COMPATIBLE_INTERFACE_NUMBER_MAX CORRADE_CXX_STANDARD)
 set_target_properties(CorradeUtility PROPERTIES DEBUG_POSTFIX "-d")
 if(NOT BUILD_STATIC)
     set_target_properties(CorradeUtility PROPERTIES VERSION ${CORRADE_LIBRARY_VERSION} SOVERSION ${CORRADE_LIBRARY_SOVERSION})
