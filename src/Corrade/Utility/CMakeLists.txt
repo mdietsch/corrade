@@ -98,8 +98,14 @@ target_include_directories(CorradeUtility PUBLIC
 # Require (at least) C++11 for users
 set_target_properties(CorradeUtility PROPERTIES
     INTERFACE_CORRADE_CXX_STANDARD 11)
-set_property(TARGET CorradeUtility APPEND PROPERTY
-    COMPATIBLE_INTERFACE_NUMBER_MAX CORRADE_CXX_STANDARD)
+if(NOT CMAKE_VERSION VERSION_LESS 3.0.0)
+    set_property(TARGET CorradeUtility APPEND PROPERTY
+        COMPATIBLE_INTERFACE_NUMBER_MAX CORRADE_CXX_STANDARD)
+else()
+    # It *has* to be 11 on 2.8.12
+    set_property(TARGET CorradeUtility APPEND PROPERTY
+        COMPATIBLE_INTERFACE_STRING CORRADE_CXX_STANDARD)
+endif()
 set_target_properties(CorradeUtility PROPERTIES DEBUG_POSTFIX "-d")
 if(NOT BUILD_STATIC)
     set_target_properties(CorradeUtility PROPERTIES VERSION ${CORRADE_LIBRARY_VERSION} SOVERSION ${CORRADE_LIBRARY_SOVERSION})

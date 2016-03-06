@@ -368,8 +368,14 @@ foreach(_component ${Corrade_FIND_COMPONENTS})
             # Require C++11 for users
             set_property(TARGET Corrade::${_component} PROPERTY
                 INTERFACE_CORRADE_CXX_STANDARD 11)
-            set_property(TARGET Corrade::${_component} APPEND PROPERTY
-                COMPATIBLE_INTERFACE_NUMBER_MAX CORRADE_CXX_STANDARD)
+            if(NOT CMAKE_VERSION VERSION_LESS 3.0.0)
+                set_property(TARGET Corrade::${_component} APPEND PROPERTY
+                    COMPATIBLE_INTERFACE_NUMBER_MAX CORRADE_CXX_STANDARD)
+            else()
+                # It *has* to be 11 on 2.8.12
+                set_property(TARGET Corrade::${_component} APPEND PROPERTY
+                    COMPATIBLE_INTERFACE_STRING CORRADE_CXX_STANDARD)
+            endif()
 
             # AndroidLogStreamBuffer class needs to be linked to log library
             if(CORRADE_TARGET_ANDROID)
