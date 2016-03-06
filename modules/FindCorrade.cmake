@@ -374,7 +374,7 @@ foreach(_component ${Corrade_FIND_COMPONENTS})
             else()
                 # It *has* to be 11 on 2.8.12
                 set_property(TARGET Corrade::${_component} APPEND PROPERTY
-                    COMPATIBLE_INTERFACE_STRING CORRADE_CXX_STANDARD)
+                    COMPATIBLE_INTERFACE_BOOL CORRADE_CXX_STANDARD)
             endif()
 
             # AndroidLogStreamBuffer class needs to be linked to log library
