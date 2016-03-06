@@ -365,16 +365,26 @@ foreach(_component ${Corrade_FIND_COMPONENTS})
             set_property(TARGET Corrade::${_component} APPEND PROPERTY
                 INTERFACE_INCLUDE_DIRECTORIES ${CORRADE_INCLUDE_DIR})
 
-            # Require C++11 for users
-            set_property(TARGET Corrade::${_component} PROPERTY
-                INTERFACE_CORRADE_CXX_STANDARD 11)
+            # Require (at least) C++11 for users
             if(NOT CMAKE_VERSION VERSION_LESS 3.0.0)
+                set_property(TARGET Corrade::${_component} PROPERTY
+                    INTERFACE_CORRADE_CXX_STANDARD 11)
                 set_property(TARGET Corrade::${_component} APPEND PROPERTY
                     COMPATIBLE_INTERFACE_NUMBER_MAX CORRADE_CXX_STANDARD)
             else()
-                # It *has* to be 11 on 2.8.12
+                # 2.8.12 is fucking buggy shit. Besides the fact that it
+                # doesn't know COMPATIBLE_INTERFACE_NUMBER_MAX, if I
+                # define_property() so I can inherit it from directory on a
+                # target, then I can't use it in COMPATIBLE_INTERFACE_STRING
+                # to inherit it from interfaces BECAUSE!! it thinks that it is
+                # not an user-defined property anymore. So I need to have two
+                # sets of properties, CORRADE_CXX_STANDARD_ used silently for
+                # inheritance from interfaces and CORRADE_CXX_STANDARD used
+                # publicly for inheritance from directories. AAAAAAAAARGH.
+                set_property(TARGET Corrade::${_component} PROPERTY
+                    INTERFACE_CORRADE_CXX_STANDARD_ 11)
                 set_property(TARGET Corrade::${_component} APPEND PROPERTY
-                    COMPATIBLE_INTERFACE_STRING CORRADE_CXX_STANDARD)
+                    COMPATIBLE_INTERFACE_STRING CORRADE_CXX_STANDARD_)
             endif()
 
             # AndroidLogStreamBuffer class needs to be linked to log library

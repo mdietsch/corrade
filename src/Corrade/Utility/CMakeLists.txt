@@ -96,15 +96,18 @@ target_include_directories(CorradeUtility PUBLIC
     ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_BINARY_DIR}/src)
 # Require (at least) C++11 for users
-set_target_properties(CorradeUtility PROPERTIES
-    INTERFACE_CORRADE_CXX_STANDARD 11)
 if(NOT CMAKE_VERSION VERSION_LESS 3.0.0)
-    set_property(TARGET CorradeUtility APPEND PROPERTY
+    set_property(TARGET Corrade::${_component} PROPERTY
+        INTERFACE_CORRADE_CXX_STANDARD 11)
+    set_property(TARGET Corrade::${_component} APPEND PROPERTY
         COMPATIBLE_INTERFACE_NUMBER_MAX CORRADE_CXX_STANDARD)
 else()
-    # It *has* to be 11 on 2.8.12
-    set_property(TARGET CorradeUtility APPEND PROPERTY
-        COMPATIBLE_INTERFACE_STRING CORRADE_CXX_STANDARD)
+    # See FindCorrade.cmake for juicy rant about 2.8.12 and why can't I use
+    # single property name to cover all cases. AAAAAAAAARGH.
+    set_property(TARGET Corrade::${_component} PROPERTY
+        INTERFACE_CORRADE_CXX_STANDARD_ 11)
+    set_property(TARGET Corrade::${_component} APPEND PROPERTY
+        COMPATIBLE_INTERFACE_STRING CORRADE_CXX_STANDARD_)
 endif()
 set_target_properties(CorradeUtility PROPERTIES DEBUG_POSTFIX "-d")
 if(NOT BUILD_STATIC)

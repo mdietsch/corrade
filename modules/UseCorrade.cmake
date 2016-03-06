@@ -168,21 +168,21 @@ elseif(MSVC)
         # Disabling GDI and other mud in windows.h
         "WIN32_LEAN_AND_MEAN")
 endif()
-#
-# define_property(TARGET PROPERTY CORRADE_CXX_STANDARD INHERITED
-#     BRIEF_DOCS "C++ standard to require for given target"
-#     FULL_DOCS "Sets compiler-specific flags to enable C++11 or later standard
-#         when building given target or targets in given directory. Set in
-#         combination with INTERFACE_CORRADE_CXX_STANDARD to force the standard
-#         also on users of given target.")
-# define_property(TARGET PROPERTY INTERFACE_CORRADE_CXX_STANDARD INHERITED
-#     BRIEF_DOCS "C++ standard to require for users of given target"
-#     FULL_DOCS "Sets compiler-specific flags to enable C++11 or later standard
-#         when using given target or targets in given directory.")
-# define_property(TARGET PROPERTY CORRADE_USE_PEDANTIC_FLAGS INHERITED
-#     BRIEF_DOCS "Use pedantic compiler/linker flags"
-#     FULL_DOCS "Enables additional pedantic C, C++ and linker flags on given
-#         targets or directories.")
+
+define_property(TARGET PROPERTY CORRADE_CXX_STANDARD INHERITED
+    BRIEF_DOCS "C++ standard to require for given target"
+    FULL_DOCS "Sets compiler-specific flags to enable C++11 or later standard
+        when building given target or targets in given directory. Set in
+        combination with INTERFACE_CORRADE_CXX_STANDARD to force the standard
+        also on users of given target.")
+define_property(TARGET PROPERTY INTERFACE_CORRADE_CXX_STANDARD INHERITED
+    BRIEF_DOCS "C++ standard to require for users of given target"
+    FULL_DOCS "Sets compiler-specific flags to enable C++11 or later standard
+        when using given target or targets in given directory.")
+define_property(TARGET PROPERTY CORRADE_USE_PEDANTIC_FLAGS INHERITED
+    BRIEF_DOCS "Use pedantic compiler/linker flags"
+    FULL_DOCS "Enables additional pedantic C, C++ and linker flags on given
+        targets or directories.")
 
 # Enable C++11 on GCC/Clang if CORRADE_CXX_STANDARD is set to 11 on the target.
 # Does nothing in case the user specified CXX_STANDARD property or put "-std="
@@ -190,6 +190,12 @@ endif()
 # using target_compile_options(), though.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?Clang" OR CORRADE_TARGET_EMSCRIPTEN AND NOT CMAKE_CXX_FLAGS MATCHES "-std=")
     set_property(DIRECTORY APPEND PROPERTY COMPILE_OPTIONS "$<$<AND:$<NOT:$<BOOL:$<TARGET_PROPERTY:CXX_STANDARD>>>,$<STREQUAL:$<TARGET_PROPERTY:CORRADE_CXX_STANDARD>,11>>:-std=c++11>")
+
+    # See FindCorrade.cmake for a juicy rant about why I have to use *also*
+    # CORRADE_CXX_STANDARD_ on 2.8.12. GODDAMIT.
+    if(CMAKE_VERSION VERSION_LESS 3.0.0)
+        set_property(DIRECTORY APPEND PROPERTY COMPILE_OPTIONS "$<$<AND:$<NOT:$<BOOL:$<TARGET_PROPERTY:CXX_STANDARD>>>,$<STREQUAL:$<TARGET_PROPERTY:CORRADE_CXX_STANDARD_>,11>>:-std=c++11>")
+    endif()
 endif()
 
 # On-demand pedantic compiler flags
