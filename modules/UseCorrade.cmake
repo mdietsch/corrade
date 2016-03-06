@@ -168,21 +168,21 @@ elseif(MSVC)
         # Disabling GDI and other mud in windows.h
         "WIN32_LEAN_AND_MEAN")
 endif()
-
-define_property(TARGET PROPERTY CORRADE_CXX_STANDARD INHERITED
-    BRIEF_DOCS "C++ standard to require for given target"
-    FULL_DOCS "Sets compiler-specific flags to enable C++11 or later standard
-        when building given target or targets in given directory. Set in
-        combination with INTERFACE_CORRADE_CXX_STANDARD to force the standard
-        also on users of given target.")
-define_property(TARGET PROPERTY INTERFACE_CORRADE_CXX_STANDARD INHERITED
-    BRIEF_DOCS "C++ standard to require for users of given target"
-    FULL_DOCS "Sets compiler-specific flags to enable C++11 or later standard
-        when using given target or targets in given directory.")
-define_property(TARGET PROPERTY CORRADE_USE_PEDANTIC_FLAGS INHERITED
-    BRIEF_DOCS "Use pedantic compiler/linker flags"
-    FULL_DOCS "Enables additional pedantic C, C++ and linker flags on given
-        targets or directories.")
+#
+# define_property(TARGET PROPERTY CORRADE_CXX_STANDARD INHERITED
+#     BRIEF_DOCS "C++ standard to require for given target"
+#     FULL_DOCS "Sets compiler-specific flags to enable C++11 or later standard
+#         when building given target or targets in given directory. Set in
+#         combination with INTERFACE_CORRADE_CXX_STANDARD to force the standard
+#         also on users of given target.")
+# define_property(TARGET PROPERTY INTERFACE_CORRADE_CXX_STANDARD INHERITED
+#     BRIEF_DOCS "C++ standard to require for users of given target"
+#     FULL_DOCS "Sets compiler-specific flags to enable C++11 or later standard
+#         when using given target or targets in given directory.")
+# define_property(TARGET PROPERTY CORRADE_USE_PEDANTIC_FLAGS INHERITED
+#     BRIEF_DOCS "Use pedantic compiler/linker flags"
+#     FULL_DOCS "Enables additional pedantic C, C++ and linker flags on given
+#         targets or directories.")
 
 # Enable C++11 on GCC/Clang if CORRADE_CXX_STANDARD is set to 11 on the target.
 # Does nothing in case the user specified CXX_STANDARD property or put "-std="

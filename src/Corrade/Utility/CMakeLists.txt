@@ -104,7 +104,7 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.0.0)
 else()
     # It *has* to be 11 on 2.8.12
     set_property(TARGET CorradeUtility APPEND PROPERTY
-        COMPATIBLE_INTERFACE_BOOL CORRADE_CXX_STANDARD)
+        COMPATIBLE_INTERFACE_STRING CORRADE_CXX_STANDARD)
 endif()
 set_target_properties(CorradeUtility PROPERTIES DEBUG_POSTFIX "-d")
 if(NOT BUILD_STATIC)
